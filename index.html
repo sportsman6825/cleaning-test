@@ -1,0 +1,2845 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>國立嘉義女子高級中學｜大掃除比賽評分與查詢系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input, select, textarea, button {
+      font-size: 16px !important;
+    }
+    .text-xs-force { font-size: 12px !important; }
+    .text-sm-force { font-size: 14px !important; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24">
+
+  <!-- Toast 訊息提示 -->
+  <div id="toast-container" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[92vw] max-w-lg pointer-events-none"></div>
+
+  <!-- ==================== 頂部導覽列（左上角「🏠 家」隨時回首頁） ==================== -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="w-full max-w-[1600px] mx-auto px-3 md:px-6 py-2.5 flex items-center justify-between gap-2">
+      <button type="button" onclick="goHomePage()" class="flex items-center gap-2.5 text-left group focus:outline-none active:scale-[0.98] transition" title="點擊返回首頁">
+        <div class="px-3 h-10 rounded-xl bg-teal-500 group-hover:bg-teal-400 flex items-center justify-center font-extrabold text-slate-950 text-base shadow-inner shrink-0 transition">
+          🏠 家
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-sm-force md:text-lg leading-tight tracking-wide">國立嘉義女子高級中學｜大掃除比賽評分與查詢系統</h1>
+          </div>
+          <p id="header-subtitle" class="text-xs-force text-slate-300 mt-0.5">學務處衛生組｜115學年度第一學期・第一次大掃除</p>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="preview-mode-badge" class="hidden md:inline-flex px-2.5 py-1 rounded-full text-xs-force font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">前端預覽版（本機即時運算）</span>
+        <span id="current-user-badge" class="hidden px-3 py-1 rounded-full text-xs-force font-bold bg-slate-800 text-teal-300 border border-slate-700 max-w-[160px] md:max-w-xs truncate"></span>
+        <button type="button" id="btn-logout" onclick="goHomePage()" class="hidden px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs-force font-extrabold transition">登出</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容區（手機直式滿版 w-full px-3；電腦橫式滿版 max-w-[1600px] px-6） -->
+  <main class="flex-1 w-full max-w-[1600px] mx-auto px-3 md:px-6 py-4 md:py-6">
+
+    <!-- ==================== 一、首頁（6 大入口）與登入表單視圖 ==================== -->
+    <section id="view-login" class="space-y-4">
+      <!-- 比賽公告與計分比例看板 -->
+      <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 md:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">📢</span>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="home-round-badge" class="px-2.5 py-0.5 rounded-lg bg-teal-600 text-white text-xs-force font-extrabold">目前開放：第一次大掃除</span>
+              <span id="home-date-badge" class="text-xs-force font-bold text-slate-500">比賽日期：10/14 (三)｜評分時間：09:55 ~ 10:10</span>
+            </div>
+            <p id="home-broadcast-text" class="text-sm-force text-slate-700 font-medium mt-1">
+              請各評分人員依分配區域客觀評分；各年級前六名頒發獎狀鼓勵！
+            </p>
+          </div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs-force text-slate-700 shrink-0">
+          <p class="font-extrabold text-slate-900 mb-0.5">📐 大掃除計分權重比例：</p>
+          <p>• <strong>高一、高二：</strong>公共區 <strong>25%</strong> ＋ 責任區 <strong>25%</strong> ＋ 班廁 <strong>40%</strong> ＋ 花圃 <strong>10%</strong> ＋ 推車 ＋ 師長</p>
+          <p>• <strong>高三：</strong>公共區 <strong>30%</strong> ＋ 責任區 <strong>30%</strong> ＋ 班廁 <strong>40%</strong> ＋ 推車 ＋ 師長</p>
+        </div>
+      </div>
+
+      <!-- 1.0 首頁 6 大獨立入口 -->
+      <div id="home-role-selector" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-100 gap-1">
+          <div>
+            <h2 class="text-lg md:text-xl font-extrabold text-slate-900">請選擇您的登入身份</h2>
+            <p class="text-xs-force text-slate-500">點選下方入口進入對應大掃除評分或查詢頁面</p>
+          </div>
+          <span class="text-xs-force text-slate-400">支援手機直式與電腦橫式自動滿版切換</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4">
+          <!-- 1. 幹部評分 -->
+          <button type="button" onclick="openLoginForm('cadre')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-teal-600/20 bg-teal-50/60 hover:bg-teal-100/70 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">📋</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">幹部評分</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">服務股長跨年級互評（75～85 分）</p>
+              </div>
+            </div>
+            <span class="text-teal-700 font-extrabold text-xl">→</span>
+          </button>
+
+          <!-- 2. 師長評分 -->
+          <button type="button" onclick="openLoginForm('teacher')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-indigo-600/20 bg-indigo-50/60 hover:bg-indigo-100/70 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">👩‍🏫</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">師長評分</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">選擇師長與年級掃區（-3.0 ～ +3.0 分）</p>
+              </div>
+            </div>
+            <span class="text-indigo-700 font-extrabold text-xl">→</span>
+          </button>
+
+          <!-- 3. 花圃評分 -->
+          <button type="button" onclick="openLoginForm('flowerbed')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-emerald-600/20 bg-emerald-50/60 hover:bg-emerald-100/70 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">🌺</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">花圃評分</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">高一、高二前／後走廊花圃（0～10 分／無）</p>
+              </div>
+            </div>
+            <span class="text-emerald-700 font-extrabold text-xl">→</span>
+          </button>
+
+          <!-- 4. 合作社評分 -->
+          <button type="button" onclick="openLoginForm('coop')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-orange-600/20 bg-orange-50/60 hover:bg-orange-100/70 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-orange-600 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">🍱</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">合作社評分</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">全校團膳餐車清潔（0 或 -1 分）</p>
+              </div>
+            </div>
+            <span class="text-orange-700 font-extrabold text-xl">→</span>
+          </button>
+
+          <!-- 5. 班級查詢 -->
+          <button type="button" onclick="openLoginForm('inquiry')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-amber-600/20 bg-amber-50/60 hover:bg-amber-100/70 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-amber-600 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">🏫</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">班級查詢</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">查詢大掃除加權成績、名次與評語</p>
+              </div>
+            </div>
+            <span class="text-amber-700 font-extrabold text-xl">→</span>
+          </button>
+
+          <!-- 6. 衛生組後台 -->
+          <button type="button" onclick="openLoginForm('admin')" class="w-full p-4 md:p-5 rounded-2xl border-2 border-slate-600/20 bg-slate-100 hover:bg-slate-200/80 active:scale-[0.99] flex items-center justify-between transition text-left shadow-xs">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-800 text-white flex items-center justify-center text-2xl shadow-xs shrink-0">⚙️</div>
+              <div>
+                <p class="font-extrabold text-slate-900 text-base md:text-lg">衛生組後台</p>
+                <p class="text-xs-force text-slate-600 mt-0.5">場次開關、總成績報表、代填與掃區設定</p>
+              </div>
+            </div>
+            <span class="text-slate-700 font-extrabold text-xl">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 登入表單外框（點選任一入口後展開） -->
+      <div id="login-forms-wrapper" class="max-w-xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 hidden">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+          <h2 id="login-form-title" class="text-lg font-extrabold text-slate-900">身份登入</h2>
+          <button type="button" onclick="goHomePage()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs-force font-bold">← 返回首頁選單</button>
+        </div>
+
+        <!-- 1. 幹部評分登入 -->
+        <form id="form-login-cadre" onsubmit="submitLoginCadre(event)" class="space-y-4 hidden">
+          <div id="cadre-round-hint" class="bg-teal-50 rounded-xl p-3.5 text-xs-force text-teal-950 leading-relaxed border border-teal-200"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm-force font-bold text-slate-700 mb-1">你的年級 <span class="text-rose-500">*</span></label>
+              <select id="cadre-grade" onchange="updateCadreClassOptions()" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-teal-500 outline-none">
+                <option value="1">高一（評高三）</option>
+                <option value="2">高二（評高一）</option>
+                <option value="3">高三（評高二）</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm-force font-bold text-slate-700 mb-1">你的班級 <span class="text-rose-500">*</span></label>
+              <select id="cadre-class" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-teal-500 outline-none"></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">幹部姓名 <span class="text-rose-500">*</span></label>
+            <input type="text" id="cadre-name" required placeholder="請手動輸入服務股長姓名" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-teal-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">通行密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="cadre-passcode" inputmode="numeric" required placeholder="請輸入通行密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-teal-500 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold shadow-md transition">進入幹部評分</button>
+        </form>
+
+        <!-- 2. 師長評分登入 -->
+        <form id="form-login-teacher" onsubmit="submitLoginTeacher(event)" class="space-y-4 hidden">
+          <div class="bg-indigo-50 rounded-xl p-3.5 text-xs-force text-indigo-950 border border-indigo-200">
+            請選擇師長姓名與本次巡檢年級掃區，登入後將自動帶出該年級 16 班的<strong>公共區、責任區與班廁</strong>分配地點。
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">師長姓名 <span class="text-rose-500">*</span></label>
+            <select id="tea-select" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-indigo-500 outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">選擇掃區 <span class="text-rose-500">*</span></label>
+            <select id="tea-grade-select" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-indigo-500 outline-none font-bold">
+              <option value="1">高一（101～116）</option>
+              <option value="2">高二（201～216）</option>
+              <option value="3">高三（301～316）</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">通行密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="tea-passcode" inputmode="numeric" required placeholder="請輸入通行密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold shadow-md transition">進入師長評分</button>
+        </form>
+
+        <!-- 3. 花圃評分登入 -->
+        <form id="form-login-flowerbed" onsubmit="submitLoginFlowerbed(event)" class="space-y-4 hidden">
+          <div class="bg-emerald-50 rounded-xl p-3.5 text-xs-force text-emerald-950 border border-emerald-200">
+            評分對象為<strong>一年級（101～116）</strong>與<strong>二年級（201～216）</strong>；基本分 5 分（0～10 分），若該班未分配花圃請選「無」。
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">師長姓名 <span class="text-rose-500">*</span></label>
+            <select id="fb-select" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">選擇區域 <span class="text-rose-500">*</span></label>
+            <select id="fb-zone-select" required class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold">
+              <option value="前走廊">前走廊</option>
+              <option value="後走廊">後走廊</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">通行密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="fb-passcode" inputmode="numeric" required placeholder="請輸入通行密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold shadow-md transition">進入花圃評分</button>
+        </form>
+
+        <!-- 4. 合作社評分登入 -->
+        <form id="form-login-coop" onsubmit="submitLoginCoop(event)" class="space-y-4 hidden">
+          <div class="bg-orange-50 rounded-xl p-3.5 text-xs-force text-orange-950 border border-orange-200">
+            評分對象為全校三學年（101～316）團膳餐車：推回刷洗擦拭並整齊放整齊為 <strong>0 分</strong>，未清理放整齊者扣 <strong>-1 分</strong>。
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">評分人員姓名 <span class="text-rose-500">*</span></label>
+            <input type="text" id="coop-name" required placeholder="請輸入評分人員姓名" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-orange-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">通行密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="coop-passcode" inputmode="numeric" required placeholder="請輸入通行密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-md transition">進入合作社餐車評分</button>
+        </form>
+
+        <!-- 5. 班級查詢登入 -->
+        <form id="form-login-inquiry" onsubmit="submitLoginInquiry(event)" class="space-y-4 hidden">
+          <div class="bg-amber-50 rounded-xl p-3.5 text-xs-force text-amber-950 border border-amber-200">
+            預設查詢密碼為 <strong>1 + 班級</strong>（例如：101 班為 <strong>1101</strong>、201 班為 <strong>1201</strong>、301 班為 <strong>1301</strong>）。
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm-force font-bold text-slate-700 mb-1">年級 <span class="text-rose-500">*</span></label>
+              <select id="inq-grade" onchange="updateInquiryClassOptions()" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                <option value="1">高一</option>
+                <option value="2">高二</option>
+                <option value="3">高三</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm-force font-bold text-slate-700 mb-1">班級 <span class="text-rose-500">*</span></label>
+              <select id="inq-class" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 bg-white focus:ring-2 focus:ring-amber-500 outline-none"></select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">查詢密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="inq-passcode" inputmode="numeric" required placeholder="請輸入查詢密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-amber-500 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold shadow-md transition">查詢本班大掃除成績</button>
+        </form>
+
+        <!-- 6. 衛生組後台登入 -->
+        <form id="form-login-admin" onsubmit="submitLoginAdmin(event)" class="space-y-4 hidden">
+          <div class="bg-slate-100 rounded-xl p-3.5 text-xs-force text-slate-700 border border-slate-200">
+            限學務處衛生組管理人員使用，請輸入管理密碼進入後台。
+          </div>
+          <div>
+            <label class="block text-sm-force font-bold text-slate-700 mb-1">後台管理密碼 <span class="text-rose-500">*</span></label>
+            <input type="password" id="adm-passcode" inputmode="numeric" required placeholder="請輸入管理密碼" class="w-full rounded-xl border border-slate-300 px-3.5 py-3 focus:ring-2 focus:ring-slate-700 outline-none" />
+          </div>
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-extrabold shadow-md transition">登入衛生組後台</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== 二、四大評分作業工作區（手機直式卡片 / 電腦橫式寬版表格） ==================== -->
+    <section id="view-scoring" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="scoring-role-badge" class="px-3 py-1 rounded-xl bg-teal-600 text-white font-extrabold text-sm-force"></span>
+            <span id="scoring-round-tag" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs-force"></span>
+          </div>
+          <p id="scoring-rule-desc" class="text-xs-force text-slate-600 mt-1.5"></p>
+        </div>
+
+        <div id="scoring-grade-tabs" class="hidden flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl shrink-0">
+          <button type="button" onclick="switchScoringGradeTab(1)" id="sc-gtab-1" class="px-3.5 py-2 rounded-lg text-xs-force font-extrabold">高一 (101~116)</button>
+          <button type="button" onclick="switchScoringGradeTab(2)" id="sc-gtab-2" class="px-3.5 py-2 rounded-lg text-xs-force font-extrabold">高二 (201~216)</button>
+          <button type="button" onclick="switchScoringGradeTab(3)" id="sc-gtab-3" class="px-3.5 py-2 rounded-lg text-xs-force font-extrabold">高三 (301~316)</button>
+        </div>
+      </div>
+
+      <!-- 電腦橫式滿版表頭 -->
+      <div id="scoring-desktop-header" class="hidden md:grid bg-slate-800 text-white rounded-t-2xl px-5 py-3 text-xs-force font-extrabold items-center gap-4"></div>
+
+      <!-- 1~16 班評分列容器 -->
+      <div id="scoring-rows-container" class="space-y-3 md:space-y-0 md:divide-y md:divide-slate-200 md:bg-white md:rounded-b-2xl md:border md:border-t-0 md:border-slate-200 md:shadow-sm"></div>
+
+      <!-- 底部固定懸浮送出列 -->
+      <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-300 shadow-2xl z-30 px-3 md:px-6 py-3">
+        <div class="w-full max-w-[1600px] mx-auto flex items-center justify-between gap-3">
+          <div>
+            <p id="scoring-footer-status" class="text-sm-force font-extrabold text-slate-900">本頁共 16 班</p>
+            <p class="text-xs-force text-slate-500">確認無誤後請點擊右側按鈕一鍵送出（送出後仍可重新修改覆蓋）</p>
+          </div>
+          <button type="button" onclick="submitScoringForm()" class="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 active:scale-[0.98] text-white font-extrabold text-sm-force shadow-lg transition shrink-0">
+            🚀 一鍵送出全部評分
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 三、班級查詢視圖 ==================== -->
+    <section id="view-inquiry" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 id="inq-title" class="text-lg md:text-2xl font-extrabold text-slate-900">101 班大掃除比賽成績查詢</h2>
+          <p id="inq-subtitle" class="text-xs-force text-slate-500 mt-0.5">115學年度第一學期｜成績即時結算</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs-force font-bold text-slate-600">選擇場次：</label>
+          <select id="inq-round-select" onchange="renderClassInquiryView()" class="rounded-xl border border-slate-300 px-3.5 py-2 font-extrabold bg-white text-slate-900">
+            <option value="1">第一次大掃除</option>
+            <option value="2">第二次大掃除</option>
+            <option value="3">第三次大掃除</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 text-center space-y-3">
+            <p class="text-xs-force font-extrabold text-slate-500 tracking-wider">本場次大掃除總分</p>
+            <p id="inq-total-score" class="text-4xl md:text-5xl font-extrabold text-teal-700">80.00</p>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-center gap-3">
+              <span class="text-sm-force font-bold text-slate-600">全年級名次：</span>
+              <span id="inq-rank-badge" class="px-3.5 py-1 rounded-full bg-slate-100 text-slate-900 font-extrabold text-base">第 - 名</span>
+            </div>
+            <div id="inq-reward-banner" class="hidden mt-2 p-3 rounded-xl bg-amber-50 border-2 border-amber-400 text-amber-900 font-extrabold text-sm-force shadow-xs">
+              🏆 前六名（獎狀鼓勵）
+            </div>
+          </div>
+
+          <div class="bg-slate-800 text-white rounded-2xl p-4 text-xs-force space-y-1.5 leading-relaxed">
+            <p class="font-extrabold text-teal-300">📐 本年級計分比例說明：</p>
+            <p id="inq-weight-formula-text"></p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-4">
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
+            <h3 class="text-base font-extrabold text-slate-900">📊 各項成績加權明細</h3>
+            <div id="inq-breakdown-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-extrabold text-slate-900">💬 各區評分備註與建議</h3>
+              <span class="text-xs-force text-slate-400">依規定隱藏評分幹部姓名</span>
+            </div>
+            <div id="inq-remarks-list" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 四、衛生組後台管理視圖 ==================== -->
+    <section id="view-admin" class="hidden space-y-4">
+      <!-- ★ 後台頂部常駐控制列：場次切換開關與儲存按鈕 -->
+      <div class="bg-slate-900 text-white rounded-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs-force md:text-sm-force shrink-0">全域場次控制</span>
+          <div>
+            <p class="font-extrabold text-sm-force md:text-base">目前開放比賽場次切換</p>
+            <p class="text-xs-force text-slate-300">切換並儲存後，全校前台輪值分工立即同步更新</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="top-active-round" class="rounded-xl bg-slate-800 border border-slate-600 text-white px-3.5 py-2 font-extrabold">
+            <option value="1">第一次大掃除（1~5公 / 6~10責 / 11~16廁）</option>
+            <option value="2">第二次大掃除（1~5廁 / 6~10公 / 11~16責）</option>
+            <option value="3">第三次大掃除（1~5責 / 6~10廁 / 11~16公）</option>
+          </select>
+          <button type="button" onclick="quickSaveTopRound()" class="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-sm-force shadow transition">
+            💾 儲存場次設定
+          </button>
+        </div>
+      </div>
+
+      <!-- 後台 4 大分頁導覽列 -->
+      <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 flex overflow-x-auto no-scrollbar gap-1.5 text-xs-force md:text-sm-force font-extrabold">
+        <button type="button" onclick="switchAdminTab('report')" id="atab-report" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white whitespace-nowrap">🏆 總成績報表與匯出</button>
+        <button type="button" onclick="switchAdminTab('progress')" id="atab-progress" class="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 whitespace-nowrap">📋 送出進度與整班代填</button>
+        <button type="button" onclick="switchAdminTab('backfill')" id="atab-backfill" class="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 whitespace-nowrap">✍️ 單筆補填與明細修改</button>
+        <button type="button" onclick="switchAdminTab('settings')" id="atab-settings" class="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 whitespace-nowrap">⚙️ 名單排序、密碼與掃區設定</button>
+      </div>
+
+      <!-- 4.1 總成績報表與 Excel 匯出 -->
+      <div id="admin-pane-report" class="space-y-4">
+        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <select id="rep-round-select" onchange="renderAdminSummaryReport()" class="rounded-xl border border-slate-300 px-3.5 py-2 font-extrabold bg-white text-slate-900">
+              <option value="1">第一次大掃除</option>
+              <option value="2">第二次大掃除</option>
+              <option value="3">第三次大掃除</option>
+            </select>
+
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs-force font-extrabold">
+              <button type="button" onclick="switchReportGrade(1)" id="rep-gbtn-1" class="px-3.5 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs">高一</button>
+              <button type="button" onclick="switchReportGrade(2)" id="rep-gbtn-2" class="px-3.5 py-1.5 rounded-lg text-slate-600">高二</button>
+              <button type="button" onclick="switchReportGrade(3)" id="rep-gbtn-3" class="px-3.5 py-1.5 rounded-lg text-slate-600">高三</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="loadDemoSampleData()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs-force font-extrabold">🧪 載入模擬成績測試</button>
+            <button type="button" onclick="clearAllRoundScores()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs-force font-extrabold">🗑️ 清空本場次成績</button>
+            <button type="button" onclick="exportSummaryExcel()" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs-force font-extrabold shadow-sm">📥 匯出 .xlsx 總成績報表</button>
+          </div>
+        </div>
+
+        <div id="rep-weight-banner" class="bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3 text-xs-force md:text-sm-force font-bold text-teal-950"></div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+          <table class="w-full text-xs-force text-center border-collapse">
+            <thead id="rep-table-head"></thead>
+            <tbody id="rep-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4.2 送出進度監控與整班代填 -->
+      <div id="admin-pane-progress" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base md:text-lg font-extrabold text-slate-900">📋 各類評分人員送出進度與「衛生組整班代填」</h3>
+            <p class="text-xs-force text-slate-500 mt-0.5">若學生不會操作或未帶手機，可直接點擊該班右側「✍️ 衛生組代填」輸入整份評分。</p>
+          </div>
+          <select id="prog-round-select" onchange="renderAdminProgressPane()" class="rounded-xl border border-slate-300 px-3.5 py-2 font-extrabold bg-white">
+            <option value="1">第一次大掃除</option>
+            <option value="2">第二次大掃除</option>
+            <option value="3">第三次大掃除</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="prog-staff-cards"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4" id="prog-cadre-grades"></div>
+      </div>
+
+      <!-- 4.3 單筆補填與明細修改 -->
+      <div id="admin-pane-backfill" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3.5">
+          <h3 class="text-base font-extrabold text-slate-900">✍️ 單筆補填／新增評分紀錄</h3>
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">比賽場次</label>
+              <select id="bf-round" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white">
+                <option value="1">第一次大掃除</option>
+                <option value="2">第二次大掃除</option>
+                <option value="3">第三次大掃除</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">評分類別</label>
+              <select id="bf-type" onchange="onBackfillTypeChange()" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white font-bold">
+                <option value="cadre">幹部評分 (75~85)</option>
+                <option value="teacher">師長評分 (-3~+3)</option>
+                <option value="flowerbed">花圃評分 (0~10/無)</option>
+                <option value="coop">合作社推車 (0/-1)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">評分來源／人員</label>
+              <select id="bf-source" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white"></select>
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">受評班級</label>
+              <select id="bf-target-class" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white"></select>
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">評分成績</label>
+              <select id="bf-score" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white font-extrabold"></select>
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">備註說明</label>
+              <input type="text" id="bf-remark" placeholder="選填備註" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+            </div>
+          </div>
+          <button type="button" onclick="submitSingleBackfill()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs-force font-extrabold">💾 寫入此筆補填成績</button>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-base font-extrabold text-slate-900">🗂️ 已送出成績明細檢視與修改</h3>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="log-round-filter" onchange="renderAdminLogsTable()" class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force font-bold bg-white">
+                <option value="1">第一次大掃除</option>
+                <option value="2">第二次大掃除</option>
+                <option value="3">第三次大掃除</option>
+              </select>
+              <select id="log-type-filter" onchange="renderAdminLogsTable()" class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force font-bold bg-white">
+                <option value="all">全部類別</option>
+                <option value="cadre">幹部評分</option>
+                <option value="teacher">師長評分</option>
+                <option value="flowerbed">花圃評分</option>
+                <option value="coop">合作社推車</option>
+              </select>
+              <select id="log-class-filter" onchange="renderAdminLogsTable()" class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force font-bold bg-white">
+                <option value="all">全部受評班級</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs-force text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-800 text-white">
+                  <th class="py-2.5 px-3">類別</th>
+                  <th class="py-2.5 px-3">受評班級</th>
+                  <th class="py-2.5 px-3">項目／區域</th>
+                  <th class="py-2.5 px-3">評分來源</th>
+                  <th class="py-2.5 px-3">成績</th>
+                  <th class="py-2.5 px-3">備註</th>
+                  <th class="py-2.5 px-3 text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody id="admin-logs-tbody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4.4 名單排序、密碼與掃區設定 -->
+      <div id="admin-pane-settings" class="hidden space-y-5">
+        <!-- A. 學期資訊與各類通行碼設定 -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+          <h3 class="text-base font-extrabold text-slate-900">🎛️ A. 學期資訊與各類通行密碼設定</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">學年度</label>
+              <input type="text" id="set-year" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">學期（1 或 2）</label>
+              <input type="text" id="set-sem" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">本場次比賽日期顯示</label>
+              <input type="text" id="set-date-str" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">幹部通行碼</label>
+              <input type="text" id="set-pw-cadre" inputmode="numeric" class="w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">師長通行碼</label>
+              <input type="text" id="set-pw-teacher" inputmode="numeric" class="w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">花圃通行碼</label>
+              <input type="text" id="set-pw-flowerbed" inputmode="numeric" class="w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">合作社通行碼</label>
+              <input type="text" id="set-pw-coop" inputmode="numeric" class="w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs-force font-bold text-slate-600 mb-1">衛生組後台管理密碼</label>
+              <input type="text" id="set-pw-admin" inputmode="numeric" class="w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs-force font-bold text-slate-600 mb-1">首頁公告事項</label>
+            <input type="text" id="set-broadcast" class="w-full rounded-xl border border-slate-300 px-3 py-2" />
+          </div>
+
+          <button type="button" onclick="saveGeneralSettings()" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm-force font-extrabold shadow-xs">💾 儲存基本與通行碼設定</button>
+        </div>
+
+        <!-- B. 師長與花圃評分師長名單管理（新增 / 刪除 / ▲▼ 排序） -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- B1. 班級評分師長名單 -->
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
+            <h3 class="text-base font-extrabold text-indigo-950">👩‍🏫 B1. 師長評分名單（可新增／刪除／調整順序）</h3>
+            <p class="text-xs-force text-slate-500">師長登入時可自行於下拉選單選擇高一、高二或高三掃區。</p>
+            <div class="flex gap-2">
+              <input type="text" id="add-tea-name" placeholder="輸入師長姓名" class="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm-force" />
+              <button type="button" onclick="addStaffItem('teachers')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs-force font-extrabold shrink-0">➕ 新增師長</button>
+            </div>
+            <div id="list-teachers" class="space-y-2 pt-1"></div>
+          </div>
+
+          <!-- B2. 花圃評分師長名單 -->
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
+            <h3 class="text-base font-extrabold text-emerald-950">🌺 B2. 花圃評分師長名單（預計 3 位，可新增／刪除／排序）</h3>
+            <p class="text-xs-force text-slate-500">師長登入時可自行於下拉選單選擇「前走廊」或「後走廊」。</p>
+            <div class="flex gap-2">
+              <input type="text" id="add-fb-name" placeholder="輸入花圃評分師長姓名" class="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm-force" />
+              <button type="button" onclick="addStaffItem('flowerbeds')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs-force font-extrabold shrink-0">➕ 新增師長</button>
+            </div>
+            <div id="list-flowerbeds" class="space-y-2 pt-1"></div>
+          </div>
+        </div>
+
+        <!-- C. 全校 48 班查詢密碼表 -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">🏫 C. 全校 48 班查詢密碼表（預設：1 + 班級）</h3>
+              <p class="text-xs-force text-slate-500">修改後即時儲存；亦可一鍵重設回 1101～1316。</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs-force font-extrabold">
+                <button type="button" onclick="switchPwTableGrade(1)" id="pwt-g-1" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs">高一</button>
+                <button type="button" onclick="switchPwTableGrade(2)" id="pwt-g-2" class="px-3 py-1.5 rounded-lg text-slate-600">高二</button>
+                <button type="button" onclick="switchPwTableGrade(3)" id="pwt-g-3" class="px-3 py-1.5 rounded-lg text-slate-600">高三</button>
+              </div>
+              <button type="button" onclick="resetClassPasswords()" class="px-3 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs-force font-extrabold">⚡ 重設為 1+班級</button>
+            </div>
+          </div>
+          <div id="admin-pw-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5"></div>
+        </div>
+
+        <!-- D. 掃區分配表微調（已整併 115-1 衛生秘笈全校 48 班資料） -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">🧹 D. 全校 48 班掃區分配表微調（自動帶入幹部與師長評分頁）</h3>
+              <p class="text-xs-force text-slate-500">已完整匯入《115學年度第一學期衛生秘笈》全校 48 班公共區、責任區與班廁分配，可隨時在此微調修改。</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <input type="text" id="amap-search" oninput="renderAdminAreaMapTable()" placeholder="搜尋班級或掃區關鍵字..." class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force bg-slate-50 focus:bg-white outline-none" />
+              <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs-force font-extrabold">
+                <button type="button" onclick="switchAreaMapGrade(1)" id="amap-g-1" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs">高一</button>
+                <button type="button" onclick="switchAreaMapGrade(2)" id="amap-g-2" class="px-3 py-1.5 rounded-lg text-slate-600">高二</button>
+                <button type="button" onclick="switchAreaMapGrade(3)" id="amap-g-3" class="px-3 py-1.5 rounded-lg text-slate-600">高三</button>
+                <button type="button" onclick="switchAreaMapGrade(0)" id="amap-g-0" class="px-3 py-1.5 rounded-lg text-slate-600">全校48班</button>
+              </div>
+              <button type="button" onclick="resetGradeRespAreas()" class="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs-force font-extrabold">↻ 責任區重設為預設精簡文字</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs-force text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-800 text-white">
+                  <th class="py-2.5 px-3 w-20">班級</th>
+                  <th class="py-2.5 px-3 min-w-[280px]">公共區負責地點</th>
+                  <th class="py-2.5 px-3 min-w-[240px]">責任區負責地點</th>
+                  <th class="py-2.5 px-3 min-w-[220px]">班廁負責地點</th>
+                </tr>
+              </thead>
+              <tbody id="admin-areamap-tbody" class="divide-y divide-slate-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. 系統設定與《115學年度第一學期衛生秘笈》全校 48 班掃區資料
+    // =========================================================================
+    const API_URL = ""; // 待確認網頁版型無誤後，貼入 Google Apps Script 網址即自動連線雲端
+
+    const DEFAULT_RESP_BASE = "教室走廊地面、門窗、桌椅掃具擺置、垃圾分類、講台黑板、洗手台及飲水機清潔";
+
+    // 整併自《115學年度第一學期衛生秘笈》第 9~14 頁之全校 48 班掃區分配表
+    const SECRET_BOOK_AREA_MAP = {
+      // ==================== 高一（101 ~ 116） ====================
+      "101": {
+        publicArea: "國文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；晤談室(國文與英文辦公室間)辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側四樓女廁*3"
+      },
+      "102": {
+        publicArea: "行政大樓一樓前庭(從教務處與教官室中間所夾之中廊往校門口方向延伸至階梯，含無障礙斜坡、四周樓梯、圓弧凹槽、空地)；行政大樓與教學大樓之間一樓的中走廊",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側三樓女廁*5"
+      },
+      "103": {
+        publicArea: "教學大樓中庭的兩座圓弧樓梯、販賣機旁梯下空間；教學大樓一樓中庭(從連接行政大樓之中走廊區到水池前之間有鋪磁磚的整個空地、含藝文中心前空地)；教學大樓西側四樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 116 之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側四樓女廁*5"
+      },
+      "104": {
+        publicArea: "英文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭；教學大樓東側三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 101 之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側三樓女廁*5"
+      },
+      "105": {
+        publicArea: "圖書館一樓：正門前台階和殘障坡道、走廊、紅磚道、辦公室、座位區桌椅擦拭、報紙區、書庫區及閱覽區沙發、櫃子擦拭、倒一般垃圾(每天)、內部樓梯間(含梯下空間到廁所外地板)、寧園蕙心亭[圖書館一樓南側]打掃(含掃地、擦桌子椅子)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側三樓女廁*4;無障礙*1"
+      },
+      "106": {
+        publicArea: "教學大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 216 之間的走道)；圖書館內部一樓升二樓、二樓升三樓、三樓升四樓樓梯(含二樓樓梯轉角平台區地板掃地拖地、三樓櫃子內外清理、扶手用抹布擦拭)、清理蜘蛛網",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側三樓女廁*6"
+      },
+      "107": {
+        publicArea: "校長室(含秘書室)&會議室(校長室旁)外走廊、洗手台，以及掃地拖地、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網；行政大樓二樓校長室外面「誠仁新毅」立牌處空地到連接教學大樓的中走廊，二樓 T 型走廊",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側三樓女廁*6"
+      },
+      "108": {
+        publicArea: "教學大樓東側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 108 之間的走道)；教學大樓東側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側四樓女廁*4"
+      },
+      "109": {
+        publicArea: "教學大樓東側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓二樓輔導室(團體活動室)內部掃地拖地、外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側四樓女廁*5"
+      },
+      "110": {
+        publicArea: "教學大樓五樓特殊專科教室外整條走廊(至樓梯處)；教學大樓中央三樓升四樓、四樓升五樓樓梯(含三樓、四樓及五樓樓梯到電梯前面周圍整個平台空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】；【115-2 新增】教學大樓電梯內部地板清掃及扶手面板擦拭",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側四樓女廁*5"
+      },
+      "111": {
+        publicArea: "社會科辦公室外走廊(至東側廁所前)、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側四樓女廁*3"
+      },
+      "112": {
+        publicArea: "教學大樓西側五樓(南區輔導諮商中心)外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭，一般/回收垃圾清理；教學大樓西側五樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側四樓女廁*5;教學大樓西側五樓男廁*2(全)"
+      },
+      "113": {
+        publicArea: "教學大樓西側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓東側三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側三樓女廁*5;男廁*1(全)"
+      },
+      "114": {
+        publicArea: "行政大樓西側二樓(自然科~西側廁所前方)外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側五樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和交通安全教室之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側五樓女廁*5"
+      },
+      "115": {
+        publicArea: "輔導室辦公室外走廊(輔導室門外到廁所之間西側走廊)窗戶、窗台、窗下空隙瓷磚、書架整理擦拭、清理蜘蛛網、一般/回收垃圾清理",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側五樓女廁*5;無障礙*1"
+      },
+      "116": {
+        publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館三樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館東側樓梯清掃與扶手擦拭(B1~4F)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "藝能館三樓男/女/無障礙廁所"
+      },
+
+      // ==================== 高二（201 ~ 216） ====================
+      "201": {
+        publicArea: "教學大樓與中正館之間停車場區域掃地；教學大樓東側外停車場進入大樓之間的台階、殘障坡道、台階到教室與東側樓梯之間的空地掃地拖地、周圍草皮區撿落葉、垃圾；行政大樓東側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "行政大樓東側二樓女廁*3;男廁*1;無障礙廁所*1(全)"
+      },
+      "202": {
+        publicArea: "育樂中心游泳池室內更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；育樂中心教職員更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；圖書館西側(靠近操場)一樓門前平台、電梯、樓梯、梯下空間、殘障坡道及一樓升二樓樓梯；圖書館三樓中走廊掃地拖地；行政大樓東側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "行政大樓東側一樓女廁*3;男廁*1;無障礙廁所*1(全)"
+      },
+      "203": {
+        publicArea: "圖書館二樓自修室(包含裡面三間小教室、掃地拖地、擦拭桌面)；圖書館一樓廁所全部；圖書館二樓廁所全部【含倒垃圾、便盆清潔】；教學大樓東側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 201 之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側一樓女廁*6"
+      },
+      "204": {
+        publicArea: "游泳池室外更衣室及北側走道(地面、垃圾清理)、體育組辦公室外一樓男廁 1 間；體育組辦公室與游泳池間走道及游泳池置物櫃擦拭及物品清空；教學大樓西側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 207 教室之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側一樓女廁*4;教學大樓西側一樓女廁*2;教學大樓西側一樓無障礙*1"
+      },
+      "205": {
+        publicArea: "圖書館四樓寧翔齋(掃地拖地、書櫃及桌面擦拭)；圖書館三樓廁所全部；圖書館四樓廁所全部；【含倒垃圾、便盆清潔】",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側一樓女廁*7"
+      },
+      "206": {
+        publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓各教室外窗戶窗台擦拭、走廊掃地拖地、欄杆鞋櫃清理、電梯(地面掃地拖地、內部扶手、面板擦拭)；行政大樓西側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "行政大樓西側二樓女廁*3;男廁*1;無障礙*1"
+      },
+      "207": {
+        publicArea: "新科館 1F 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；育樂中心游泳池室內更衣室 5 間地面、垃圾清理；行政大樓西側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側一樓女廁*3;男廁*1;無障礙*1;教學大樓西側一樓女廁*3"
+      },
+      "208": {
+        publicArea: "體育組辦公室內一樓升二樓樓梯；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；圖書館西側(靠近操場)外部二樓升三樓、三樓升四樓樓梯，及二樓、三樓、四樓平台(含電梯周圍、陽台排水孔、櫃子內外清理、樓梯扶手及飲水機台擦拭)；教學大樓東側一樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側一樓女廁*5;男廁*1(全)"
+      },
+      "209": {
+        publicArea: "育樂中心游泳池東西側走道、沖水區、看台、看台下方區域；育樂中心一樓女廁(兩間蹲式)及無障礙廁所；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；司令台東側看台、階梯及看台旁空地走道清掃",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側二樓女廁*6"
+      },
+      "210": {
+        publicArea: "教學大樓東側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 208 教室之間的走道)；健康中心診療室、辦公室、哺乳室內全部掃地拖地、外部 L 型走廊(西側及南側)清掃、一般垃圾清理；健康中心四周圍草皮區及兩條無障礙斜坡清掃與落葉、垃圾整理；司令台清掃、撿拾垃圾、桌子擦拭",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側二樓女廁*4"
+      },
+      "211": {
+        publicArea: "新科館東側樓梯清掃與扶手擦拭(B1~5F)；司令台西側看台、階梯及看台旁空地走道清掃；教學大樓中央一樓升二樓、二樓升三樓樓梯(含一樓及二樓樓梯到電梯前面周圍整個平台空間及一樓的梯下空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓東側二樓女廁*7"
+      },
+      "212": {
+        publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；新科館西側樓梯清掃與扶手擦拭(B1~5F)；教學大樓西側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 214 之間的走道)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側二樓女廁*7"
+      },
+      "213": {
+        publicArea: "新科館 B1 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；新科館西側無障礙坡道清掃；中正館四周(東側側門廊道階梯殘障坡道廣場、西側外階梯磁磚平台公用電話、南側外階梯至腳踏車棚交界處)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側一樓女廁*4;教學大樓西側二樓女廁*2;無障礙*1"
+      },
+      "214": {
+        publicArea: "育樂中心東側一樓升二樓、二樓升三樓樓梯全(含一樓、二樓、三樓梯前平台)；育樂中心三樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；育樂中心三樓各教室外窗戶、窗台擦拭、走廊掃地拖地、欄杆擦拭、鞋櫃清理；美育大樓(舊科館)一樓+二樓，走廊清掃與樓梯清掃及擦拭",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側二樓女廁*7"
+      },
+      "215": {
+        publicArea: "教學大樓三樓空中花園(打掃、收拾垃圾)；教學大樓三樓中央電梯外陽台清掃；美育大樓(舊科館)一樓 男/女/無障礙廁所清潔(含馬桶、地板、洗手台、倒垃圾)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "教學大樓西側四樓女廁*4"
+      },
+      "216": {
+        publicArea: "特教組安排舞蹈教室 1 間；藝能館三樓走廊清掃、排水溝渠清掃、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館西側樓梯清掃與扶手擦拭(B1~4F)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "藝能館四樓男廁/女廁/無障礙廁所"
+      },
+
+      // ==================== 高三（301 ~ 316） ====================
+      "301": {
+        publicArea: "行政大樓東側五樓女廁&男廁公共區(大地板、掃地工具擺放、鏡子、洗手台)；行政大樓東側電梯內部地板清掃及扶手面板擦拭",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）",
+        toiletArea: "行政大樓東側五樓女廁*3;男廁*1;無障礙廁所*1"
+      },
+      "302": {
+        publicArea: "行政大樓東側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；進德堂內部掃地拖地、倒垃圾與資源回收；進德堂外部入門處台階、殘障坡道、南北兩側通道之垃圾與落葉清理",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓東側四樓女廁*4"
+      },
+      "303": {
+        publicArea: "行政大樓東側四樓社會科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓五樓東側走廊至廁所前方(含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台，倒一般垃圾與回收垃圾(中央樓梯旁)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：社會科專科教室前洗手台、教室前洗手台與飲水機台）",
+        toiletArea: "行政大樓東側四樓女廁*3"
+      },
+      "304": {
+        publicArea: "行政大樓中央(中廊旁)地下一樓至三樓的兩座樓梯(含各樓層樓梯前空間、清理蜘蛛網)；行政大樓東側四樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓東側四樓女廁*3"
+      },
+      "305": {
+        publicArea: "行政大樓中央升四樓、升五樓樓梯(含三樓及四樓樓梯前的空地及梯下空間、清理蜘蛛網)；總務處一樓整個走廊(含一樓東南西北三處入口階梯)、無障礙斜坡、掃地拖地與清理蜘蛛網；總務處一樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓西側四樓女廁*4;總務處一樓女廁*2;一樓男廁*1"
+      },
+      "306": {
+        publicArea: "行政大樓西側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；行政大樓西側電梯內部地板清掃及扶手面板擦拭；行政大樓五樓西側走廊至廁所前方(不含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓西側四樓女廁*3"
+      },
+      "307": {
+        publicArea: "行政大樓西側一樓(油印室~西側廁所)外走廊、水泥走道、窗台、窗下空隙瓷磚、清理蜘蛛網；行政大樓西側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)；【115-2 新增】教務處與總務中間通道掃地，用柱子區隔 305 與 307 的掃區",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓西側四樓女廁*3"
+      },
+      "308": {
+        publicArea: "行政大樓西側四樓國文科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓西側五樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：國文科專科教室前洗手台、教室前洗手台與飲水機台）",
+        toiletArea: "行政大樓西側五樓女廁*3;男廁*1;無障礙*1"
+      },
+      "309": {
+        publicArea: "行政大樓東側一樓(國防雙語教室~東側廁所)外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓三樓東側走廊延伸至廁所前方(含餐車放置區)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓東側三樓女廁*4"
+      },
+      "310": {
+        publicArea: "行政大樓西側三樓數學專科教室、teal 教室到廁所前方之外部走廊(兩者皆包含地板、餐車放置區、窗戶、窗台、窗台下空隙磁磚、座椅平台清掃擦拭)；明德樓一樓走廊(含接柏油路樓梯)、無障礙坡道",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台、teal 教室前洗手台）",
+        toiletArea: "行政大樓東側三樓女廁*3"
+      },
+      "311": {
+        publicArea: "明德樓、總務處、藝能館之間的車道、機車車棚；行政大樓東側三樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)；總務處三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、外走廊)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓東側三樓女廁*3;總務處三樓女廁*2"
+      },
+      "312": {
+        publicArea: "總務處一到三樓南側及北側兩座樓梯(三樓含簡報室外面整個地板) 掃地拖地與清理蜘蛛網；數學科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；總務處三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）",
+        toiletArea: "行政大樓西側三樓女廁*3;總務處三樓男廁*2"
+      },
+      "313": {
+        publicArea: "行政大樓東側一樓(教室官~學務處)外走廊、水泥走道、無障礙坡道、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網",
+        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
+        toiletArea: "行政大樓西側三樓女廁*4"
+      },
+      "314": {
+        publicArea: "行政大樓西側一樓「教務主任辦公室~教務處(不含油印室)」外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：數學科專科教室前洗手台與飲水機台）",
+        toiletArea: "行政大樓西側三樓女廁*3"
+      },
+      "315": {
+        publicArea: "總務處二樓整個走廊(延伸到兩側樓梯處)掃地拖地、清理蜘蛛網；總務處二樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
+        respArea: DEFAULT_RESP_BASE + "（輪值：316 教室前洗手台）",
+        toiletArea: "總務處二樓女廁*2;二樓男廁*2"
+      },
+      "316": {
+        publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓姿體調整教室 1 間；音樂教室 1 間；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)",
+        respArea: DEFAULT_RESP_BASE,
+        toiletArea: "藝能館二樓男/女/無障礙廁所"
+      }
+    };
+
+    function buildInitialAreaMap() {
+      return JSON.parse(JSON.stringify(SECRET_BOOK_AREA_MAP));
+    }
+
+    function buildInitialClassPasswords() {
+      const map = {};
+      [1, 2, 3].forEach(g => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          map[cid] = "1" + cid; // 1101 ~ 1316
+        }
+      });
+      return map;
+    }
+
+    const STORAGE_KEY = "CYGSH_BIG_CLEAN_V2";
+
+    function getDefaultState() {
+      return {
+        settings: {
+          academicYear: "115",
+          semester: "1",
+          activeRound: 1,
+          dateStr: "10/14 (三)",
+          broadcast: "請各評分人員依分配區域客觀評分；各年級前六名頒發獎狀鼓勵！",
+          passcodes: {
+            cadre: "1234",
+            teacher: "5678",
+            flowerbed: "9999",
+            coop: "0000",
+            admin: "1331"
+          }
+        },
+        staff: {
+          teachers: [
+            { id: "T1", name: "巡檢師長1" },
+            { id: "T2", name: "巡檢師長2" },
+            { id: "T3", name: "巡檢師長3" }
+          ],
+          flowerbeds: [
+            { id: "FB1", name: "義杰" },
+            { id: "FB2", name: "明珠" },
+            { id: "FB3", name: "育祥" }
+          ]
+        },
+        classPasswords: buildInitialClassPasswords(),
+        areaMap: buildInitialAreaMap(),
+        rounds: {
+          1: { cadre: [], teacher: [], flowerbed: [], coop: [] },
+          2: { cadre: [], teacher: [], flowerbed: [], coop: [] },
+          3: { cadre: [], teacher: [], flowerbed: [], coop: [] }
+        }
+      };
+    }
+
+    let DB = loadDB();
+
+    function loadDB() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const merged = Object.assign(getDefaultState(), parsed);
+          if (!merged.areaMap) merged.areaMap = buildInitialAreaMap();
+          return merged;
+        }
+      } catch (e) {}
+      return getDefaultState();
+    }
+
+    function saveDB() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+    }
+
+    const SESSION = {
+      role: null,
+      user: null,
+      scoringGradeTab: 1,
+      scoringDrafts: {},
+      isAdminProxy: false,
+      adminReportGrade: 1,
+      adminPwGrade: 1,
+      adminAreaMapGrade: 1
+    };
+
+    // =========================================================================
+    // 2. 輔助與輪值計算邏輯
+    // =========================================================================
+    function showToast(msg, type = "info") {
+      const container = document.getElementById("toast-container");
+      const styles = {
+        success: "bg-emerald-600 text-white",
+        error: "bg-rose-600 text-white",
+        warning: "bg-amber-500 text-slate-950",
+        info: "bg-slate-800 text-white"
+      };
+      const div = document.createElement("div");
+      div.className = `px-4 py-3 rounded-xl shadow-xl text-sm-force font-extrabold text-center pointer-events-auto transition-opacity ${styles[type] || styles.info}`;
+      div.textContent = msg;
+      container.appendChild(div);
+      setTimeout(() => {
+        div.style.opacity = "0";
+        setTimeout(() => div.remove(), 300);
+      }, 3200);
+    }
+
+    function getRoundLabel(r) {
+      return { 1: "第一次大掃除", 2: "第二次大掃除", 3: "第三次大掃除" }[Number(r)] || "第一次大掃除";
+    }
+
+    function getCadreTargetGrade(scorerGrade) {
+      const g = Number(scorerGrade);
+      if (g === 1) return 3;
+      if (g === 2) return 1;
+      return 2;
+    }
+
+    function getCadreAssignedArea(roundNum, classNum) {
+      const r = Number(roundNum);
+      const c = Number(classNum);
+      if (r === 1) {
+        if (c <= 5) return "公共區";
+        if (c <= 10) return "責任區";
+        return "班廁";
+      } else if (r === 2) {
+        if (c <= 5) return "班廁";
+        if (c <= 10) return "公共區";
+        return "責任區";
+      } else {
+        if (c <= 5) return "責任區";
+        if (c <= 10) return "班廁";
+        return "公共區";
+      }
+    }
+
+    // =========================================================================
+    // 3. 初始化與首頁導覽
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!API_URL) {
+        document.getElementById("preview-mode-badge").classList.remove("hidden");
+      }
+      refreshHeaderAndHome();
+      updateCadreClassOptions();
+      updateInquiryClassOptions();
+    });
+
+    function refreshHeaderAndHome() {
+      const s = DB.settings;
+      const semText = s.semester === "2" ? "下學期" : "上學期";
+      const roundText = getRoundLabel(s.activeRound);
+      document.getElementById("header-subtitle").textContent =
+        `學務處衛生組｜${s.academicYear}學年度${semText}・${roundText}`;
+      document.getElementById("home-round-badge").textContent = `目前開放：${roundText}`;
+      document.getElementById("home-date-badge").textContent = `比賽日期：${s.dateStr}｜評分時間：09:55 ~ 10:10`;
+      document.getElementById("home-broadcast-text").textContent = s.broadcast;
+
+      const teaSel = document.getElementById("tea-select");
+      teaSel.innerHTML = DB.staff.teachers.map(t =>
+        `<option value="${t.id}">${t.name}</option>`
+      ).join("");
+
+      const fbSel = document.getElementById("fb-select");
+      fbSel.innerHTML = DB.staff.flowerbeds.map(f =>
+        `<option value="${f.id}">${f.name}</option>`
+      ).join("");
+    }
+
+    function goHomePage() {
+      SESSION.role = null;
+      SESSION.user = null;
+      SESSION.isAdminProxy = false;
+
+      ["view-scoring", "view-inquiry", "view-admin"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById("view-login").classList.remove("hidden");
+      document.getElementById("home-role-selector").classList.remove("hidden");
+      document.getElementById("login-forms-wrapper").classList.add("hidden");
+      document.getElementById("btn-logout").classList.add("hidden");
+      document.getElementById("current-user-badge").classList.add("hidden");
+      refreshHeaderAndHome();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function openLoginForm(roleKey) {
+      document.getElementById("home-role-selector").classList.add("hidden");
+      document.getElementById("login-forms-wrapper").classList.remove("hidden");
+
+      const titles = {
+        cadre: "📋 幹部評分登入",
+        teacher: "👩‍🏫 師長評分登入",
+        flowerbed: "🌺 花圃評分登入",
+        coop: "🍱 合作社餐車評分登入",
+        inquiry: "🏫 班級大掃除成績查詢",
+        admin: "⚙️ 衛生組後台登入"
+      };
+      document.getElementById("login-form-title").textContent = titles[roleKey] || "身份登入";
+
+      ["cadre", "teacher", "flowerbed", "coop", "inquiry", "admin"].forEach(k => {
+        const form = document.getElementById("form-login-" + k);
+        if (k === roleKey) form.classList.remove("hidden");
+        else form.classList.add("hidden");
+      });
+
+      if (roleKey === "cadre") {
+        const r = Number(DB.settings.activeRound);
+        const rules = {
+          1: "1～5 班評【公共區】、6～10 班評【責任區】、11～16 班評【班廁】",
+          2: "1～5 班評【班廁】、6～10 班評【公共區】、11～16 班評【責任區】",
+          3: "1～5 班評【責任區】、6～10 班評【班廁】、11～16 班評【公共區】"
+        };
+        document.getElementById("cadre-round-hint").innerHTML = `
+          <p class="font-extrabold mb-1">📌 目前為【${getRoundLabel(r)}】輪值規則：</p>
+          <p>• 跨年級互評：<strong>高三評高二、高二評高一、高一評高三</strong>（含 16 班舞蹈班全數參與）。</p>
+          <p>• 本次分工：<strong>${rules[r]}</strong>。</p>
+        `;
+        updateCadreClassOptions();
+      }
+    }
+
+    function updateCadreClassOptions() {
+      const g = Number(document.getElementById("cadre-grade").value);
+      const sel = document.getElementById("cadre-class");
+      sel.innerHTML = "";
+      for (let c = 1; c <= 16; c++) {
+        const cid = String(g * 100 + c);
+        const area = getCadreAssignedArea(DB.settings.activeRound, c);
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = `${cid} 班（評${area}）`;
+        sel.appendChild(opt);
+      }
+    }
+
+    function updateInquiryClassOptions() {
+      const g = Number(document.getElementById("inq-grade").value);
+      const sel = document.getElementById("inq-class");
+      sel.innerHTML = "";
+      for (let c = 1; c <= 16; c++) {
+        const cid = String(g * 100 + c);
+        const opt = document.createElement("option");
+        opt.value = cid;
+        opt.textContent = `${cid} 班`;
+        sel.appendChild(opt);
+      }
+    }
+
+    // =========================================================================
+    // 4. 登入驗證與分流（嚴格遵守密碼提示隱藏規則）
+    // =========================================================================
+    function submitLoginCadre(e) {
+      e.preventDefault();
+      const pw = document.getElementById("cadre-passcode").value.trim();
+      if (pw !== DB.settings.passcodes.cadre) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      const grade = Number(document.getElementById("cadre-grade").value);
+      const classNum = Number(document.getElementById("cadre-class").value);
+      const classId = String(grade * 100 + classNum);
+      const name = document.getElementById("cadre-name").value.trim();
+      const targetGrade = getCadreTargetGrade(grade);
+      const area = getCadreAssignedArea(DB.settings.activeRound, classNum);
+
+      SESSION.role = "cadre";
+      SESSION.isAdminProxy = false;
+      SESSION.user = { grade, classNum, classId, name, targetGrade, area };
+      SESSION.scoringGradeTab = targetGrade;
+      enterScoringWorkspace();
+    }
+
+    function submitLoginTeacher(e) {
+      e.preventDefault();
+      const pw = document.getElementById("tea-passcode").value.trim();
+      if (pw !== DB.settings.passcodes.teacher) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      const tid = document.getElementById("tea-select").value;
+      const targetGrade = Number(document.getElementById("tea-grade-select").value);
+      const teacher = DB.staff.teachers.find(t => t.id === tid);
+      if (!teacher) return;
+
+      SESSION.role = "teacher";
+      SESSION.isAdminProxy = false;
+      SESSION.user = { id: teacher.id, name: teacher.name, targetGrade };
+      SESSION.scoringGradeTab = targetGrade;
+      enterScoringWorkspace();
+    }
+
+    function submitLoginFlowerbed(e) {
+      e.preventDefault();
+      const pw = document.getElementById("fb-passcode").value.trim();
+      if (pw !== DB.settings.passcodes.flowerbed) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      const fid = document.getElementById("fb-select").value;
+      const zone = document.getElementById("fb-zone-select").value;
+      const fb = DB.staff.flowerbeds.find(f => f.id === fid);
+      if (!fb) return;
+
+      SESSION.role = "flowerbed";
+      SESSION.isAdminProxy = false;
+      SESSION.user = { id: fb.id, name: fb.name, zone };
+      SESSION.scoringGradeTab = 1;
+      enterScoringWorkspace();
+    }
+
+    function submitLoginCoop(e) {
+      e.preventDefault();
+      const pw = document.getElementById("coop-passcode").value.trim();
+      if (pw !== DB.settings.passcodes.coop) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      const name = document.getElementById("coop-name").value.trim();
+      if (!name) {
+        showToast("請輸入評分人員姓名", "warning");
+        return;
+      }
+
+      SESSION.role = "coop";
+      SESSION.isAdminProxy = false;
+      SESSION.user = { id: "COOP_SINGLE", name };
+      SESSION.scoringGradeTab = 1;
+      enterScoringWorkspace();
+    }
+
+    function submitLoginInquiry(e) {
+      e.preventDefault();
+      const clsId = document.getElementById("inq-class").value;
+      const pw = document.getElementById("inq-passcode").value.trim();
+      const expected = DB.classPasswords[clsId] || ("1" + clsId);
+      if (pw !== expected) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      SESSION.role = "inquiry";
+      SESSION.user = { classId: clsId };
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-inquiry").classList.remove("hidden");
+      document.getElementById("btn-logout").classList.remove("hidden");
+      const badge = document.getElementById("current-user-badge");
+      badge.textContent = `${clsId} 班查詢`;
+      badge.classList.remove("hidden");
+      document.getElementById("inq-round-select").value = String(DB.settings.activeRound);
+      renderClassInquiryView();
+    }
+
+    function submitLoginAdmin(e) {
+      e.preventDefault();
+      const pw = document.getElementById("adm-passcode").value.trim();
+      if (pw !== DB.settings.passcodes.admin) {
+        showToast("密碼錯誤，請重新輸入", "error");
+        return;
+      }
+      SESSION.role = "admin";
+      SESSION.user = { name: "衛生組長" };
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-admin").classList.remove("hidden");
+      document.getElementById("btn-logout").classList.remove("hidden");
+      const badge = document.getElementById("current-user-badge");
+      badge.textContent = "衛生組後台";
+      badge.classList.remove("hidden");
+      initAdminWorkspace();
+    }
+
+    // =========================================================================
+    // 5. 四大評分工作區（手機直式卡片 ＋ 電腦橫式寬版表格）
+    // =========================================================================
+    function enterScoringWorkspace() {
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-admin").classList.add("hidden");
+      document.getElementById("view-scoring").classList.remove("hidden");
+      document.getElementById("btn-logout").classList.remove("hidden");
+
+      const badge = document.getElementById("current-user-badge");
+      badge.classList.remove("hidden");
+
+      const roundNum = Number(DB.settings.activeRound);
+      document.getElementById("scoring-round-tag").textContent = getRoundLabel(roundNum);
+
+      const roleBadge = document.getElementById("scoring-role-badge");
+      const ruleDesc = document.getElementById("scoring-rule-desc");
+      const gradeTabs = document.getElementById("scoring-grade-tabs");
+      const gNames = { 1: "高一", 2: "高二", 3: "高三" };
+
+      if (SESSION.role === "cadre") {
+        const u = SESSION.user;
+        badge.textContent = `${u.classId} ${u.name}`;
+        roleBadge.className = "px-3 py-1 rounded-xl bg-teal-600 text-white font-extrabold text-sm-force";
+        roleBadge.textContent = `${SESSION.isAdminProxy ? "【衛生組代填】" : ""}幹部評分：${u.classId} 班評 ${gNames[u.targetGrade]}【${u.area}】`;
+        ruleDesc.textContent = "以 80 分為基本分（75～85 分）；下方已自動帶入受評班級對應的掃區位置。";
+        gradeTabs.classList.add("hidden");
+      } else if (SESSION.role === "teacher") {
+        const u = SESSION.user;
+        badge.textContent = `師長：${u.name}`;
+        roleBadge.className = "px-3 py-1 rounded-xl bg-indigo-600 text-white font-extrabold text-sm-force";
+        roleBadge.textContent = `${SESSION.isAdminProxy ? "【衛生組代填】" : ""}師長評分：${u.name}（掃區：${gNames[u.targetGrade]}）`;
+        ruleDesc.textContent = "加減分範圍 -3.0 ～ +3.0 分（預設 0.0 分）；下方已自動帶入各班負責的公共區、責任區與班廁地點。";
+        gradeTabs.classList.add("hidden");
+      } else if (SESSION.role === "flowerbed") {
+        const u = SESSION.user;
+        badge.textContent = `花圃：${u.name}（${u.zone}）`;
+        roleBadge.className = "px-3 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-sm-force";
+        roleBadge.textContent = `${SESSION.isAdminProxy ? "【衛生組代填】" : ""}花圃評分：${u.name}【${u.zone}】`;
+        ruleDesc.textContent = "僅評高一（101～116）與高二（201～216）（高三無花圃）；以 5 分為基本分（0～10 分），未分配花圃請選「無」。";
+        gradeTabs.classList.remove("hidden");
+        document.getElementById("sc-gtab-3").classList.add("hidden");
+      } else if (SESSION.role === "coop") {
+        const u = SESSION.user;
+        badge.textContent = `合作社：${u.name}`;
+        roleBadge.className = "px-3 py-1 rounded-xl bg-orange-600 text-white font-extrabold text-sm-force";
+        roleBadge.textContent = `${SESSION.isAdminProxy ? "【衛生組代填】" : ""}合作社團膳餐車評分：${u.name}`;
+        ruleDesc.textContent = "團膳餐車推回各班刷洗擦拭並整齊放整齊為 0 分（正常），未推回刷洗放整齊者扣 -1 分。";
+        gradeTabs.classList.remove("hidden");
+        document.getElementById("sc-gtab-3").classList.remove("hidden");
+      }
+
+      switchScoringGradeTab(SESSION.scoringGradeTab);
+    }
+
+    function switchScoringGradeTab(g) {
+      SESSION.scoringGradeTab = Number(g);
+      [1, 2, 3].forEach(idx => {
+        const btn = document.getElementById("sc-gtab-" + idx);
+        if (!btn) return;
+        btn.className = idx === SESSION.scoringGradeTab
+          ? "px-3.5 py-2 rounded-lg text-xs-force font-extrabold bg-white text-slate-900 shadow-xs"
+          : "px-3.5 py-2 rounded-lg text-xs-force font-extrabold text-slate-600 hover:text-slate-900";
+        if (SESSION.role === "flowerbed" && idx === 3) btn.classList.add("hidden");
+      });
+      renderScoringRows();
+    }
+
+    function getExistingScoreForRow(roundNum, classId) {
+      const rData = DB.rounds[roundNum];
+      if (SESSION.role === "cadre") {
+        const rec = rData.cadre.find(x => x.scorerClassId === SESSION.user.classId && x.targetClassId === classId);
+        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "80", remark: "" };
+      } else if (SESSION.role === "teacher") {
+        const rec = rData.teacher.find(x => x.teacherId === SESSION.user.id && x.targetClassId === classId);
+        return rec ? { score: Number(rec.score).toFixed(1), remark: rec.remark || "" } : { score: "0.0", remark: "" };
+      } else if (SESSION.role === "flowerbed") {
+        const rec = rData.flowerbed.find(x => x.fbId === SESSION.user.id && x.zone === SESSION.user.zone && x.targetClassId === classId);
+        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "5", remark: "" };
+      } else if (SESSION.role === "coop") {
+        const rec = rData.coop.find(x => x.targetClassId === classId);
+        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "0", remark: "" };
+      }
+      return { score: "0", remark: "" };
+    }
+
+    function buildScoreSelectOptionsHtml(selectedVal) {
+      if (SESSION.role === "cadre") {
+        let html = "";
+        for (let s = 85; s >= 75; s--) {
+          const label = s === 80 ? "80 分（基本分）" : `${s} 分`;
+          html += `<option value="${s}" ${String(s) === String(selectedVal) ? "selected" : ""}>${label}</option>`;
+        }
+        return html;
+      } else if (SESSION.role === "teacher") {
+        let html = "";
+        for (let t = 30; t >= -30; t -= 5) {
+          const valStr = (t / 10).toFixed(1);
+          const label = t === 0 ? "0.0 分（預設）" : (t > 0 ? `+${valStr} 分` : `${valStr} 分`);
+          html += `<option value="${valStr}" ${valStr === String(selectedVal) ? "selected" : ""}>${label}</option>`;
+        }
+        return html;
+      } else if (SESSION.role === "flowerbed") {
+        let html = `<option value="無" ${String(selectedVal) === "無" ? "selected" : ""}>無（未分配花圃）</option>`;
+        for (let s = 10; s >= 0; s--) {
+          const label = s === 5 ? "5 分（基本分）" : `${s} 分`;
+          html += `<option value="${s}" ${String(s) === String(selectedVal) ? "selected" : ""}>${label}</option>`;
+        }
+        return html;
+      } else if (SESSION.role === "coop") {
+        return `
+          <option value="0" ${String(selectedVal) === "0" ? "selected" : ""}>0 分（正常）</option>
+          <option value="-1" ${String(selectedVal) === "-1" ? "selected" : ""}>-1 分（未推回刷洗放整齊）</option>
+        `;
+      }
+      return "";
+    }
+
+    function renderScoringRows() {
+      const g = SESSION.scoringGradeTab;
+      const roundNum = Number(DB.settings.activeRound);
+      const desktopHead = document.getElementById("scoring-desktop-header");
+      const container = document.getElementById("scoring-rows-container");
+      container.innerHTML = "";
+      SESSION.scoringDrafts = {};
+
+      if (SESSION.role === "cadre") {
+        desktopHead.style.gridTemplateColumns = "100px 115px 1fr 190px 240px";
+        desktopHead.innerHTML = `
+          <div>受評班級</div>
+          <div>評分區域</div>
+          <div>該班負責掃區位置</div>
+          <div>評分成績</div>
+          <div>備註欄</div>
+        `;
+      } else if (SESSION.role === "teacher") {
+        desktopHead.style.gridTemplateColumns = "90px 1.3fr 1fr 1fr 165px 200px";
+        desktopHead.innerHTML = `
+          <div>班級</div>
+          <div>公共區</div>
+          <div>責任區</div>
+          <div>班廁</div>
+          <div>整潔成績</div>
+          <div>備註欄</div>
+        `;
+      } else if (SESSION.role === "flowerbed") {
+        desktopHead.style.gridTemplateColumns = "110px 180px 210px 1fr";
+        desktopHead.innerHTML = `
+          <div>班級</div>
+          <div>負責花圃區塊</div>
+          <div>評分成績</div>
+          <div>備註欄</div>
+        `;
+      } else if (SESSION.role === "coop") {
+        desktopHead.style.gridTemplateColumns = "110px 250px 240px 1fr";
+        desktopHead.innerHTML = `
+          <div>班級</div>
+          <div>檢查項目</div>
+          <div>餐車成績</div>
+          <div>備註欄</div>
+        `;
+      }
+
+      for (let c = 1; c <= 16; c++) {
+        const clsId = String(g * 100 + c);
+        const existing = getExistingScoreForRow(roundNum, clsId);
+        SESSION.scoringDrafts[clsId] = { score: existing.score, remark: existing.remark };
+
+        const areaObj = DB.areaMap[clsId] || {};
+        const rowDiv = document.createElement("div");
+        rowDiv.id = `srow-${clsId}`;
+        const highlightClass = getRowHighlightClass(existing.score);
+
+        if (SESSION.role === "cadre") {
+          const areaType = SESSION.user.area;
+          const locText = areaType === "公共區" ? areaObj.publicArea : (areaType === "責任區" ? areaObj.respArea : areaObj.toiletArea);
+          rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
+          rowDiv.dataset.cols = "100px 115px 1fr 190px 240px";
+
+          rowDiv.innerHTML = `
+            <div class="flex items-center justify-between md:block">
+              <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
+              <span class="md:hidden px-2.5 py-0.5 rounded-lg bg-teal-600 text-white text-xs-force font-extrabold">${areaType}</span>
+            </div>
+            <div class="hidden md:block">
+              <span class="px-2.5 py-1 rounded-lg bg-teal-600 text-white text-xs-force font-extrabold">${areaType}</span>
+            </div>
+            <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg border md:border-0 border-slate-200/80">
+              <span class="md:hidden font-bold text-slate-800">掃區位置：</span>${locText}
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">評分成績</label>
+              <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
+                ${buildScoreSelectOptionsHtml(existing.score)}
+              </select>
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
+              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+                placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
+            </div>
+          `;
+        } else if (SESSION.role === "teacher") {
+          rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
+          rowDiv.dataset.cols = "90px 1.3fr 1fr 1fr 165px 200px";
+
+          rowDiv.innerHTML = `
+            <div class="flex items-center justify-between md:block">
+              <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
+              <span class="md:hidden text-xs-force font-bold text-indigo-700">師長巡檢</span>
+            </div>
+            <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
+              <span class="md:hidden font-extrabold text-slate-900">【公共區】</span>${areaObj.publicArea}
+            </div>
+            <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
+              <span class="md:hidden font-extrabold text-slate-900">【責任區】</span>${areaObj.respArea}
+            </div>
+            <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
+              <span class="md:hidden font-extrabold text-slate-900">【班廁】</span>${areaObj.toiletArea}
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">整潔成績</label>
+              <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
+                ${buildScoreSelectOptionsHtml(existing.score)}
+              </select>
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
+              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+                placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
+            </div>
+          `;
+        } else if (SESSION.role === "flowerbed") {
+          rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
+          rowDiv.dataset.cols = "110px 180px 210px 1fr";
+
+          rowDiv.innerHTML = `
+            <div class="flex items-center justify-between md:block">
+              <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
+              <span class="md:hidden px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-xs-force font-bold">${SESSION.user.zone}</span>
+            </div>
+            <div class="hidden md:block text-xs-force font-bold text-emerald-800">${SESSION.user.zone}</div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">評分成績</label>
+              <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
+                ${buildScoreSelectOptionsHtml(existing.score)}
+              </select>
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
+              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+                placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
+            </div>
+          `;
+        } else if (SESSION.role === "coop") {
+          rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
+          rowDiv.dataset.cols = "110px 250px 240px 1fr";
+
+          rowDiv.innerHTML = `
+            <div class="flex items-center justify-between md:block">
+              <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
+              <span class="md:hidden text-xs-force text-orange-700 font-bold">團膳餐車</span>
+            </div>
+            <div class="hidden md:block text-xs-force text-slate-600">團膳餐車刷洗擦拭並整齊放整齊</div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">餐車成績</label>
+              <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
+                ${buildScoreSelectOptionsHtml(existing.score)}
+              </select>
+            </div>
+            <div>
+              <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
+              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+                placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
+            </div>
+          `;
+        }
+
+        container.appendChild(rowDiv);
+      }
+
+      applyResponsiveGridColumns();
+      document.getElementById("scoring-footer-status").textContent =
+        `目前顯示：${{1:"高一",2:"高二",3:"高三"}[g]}（共 16 班）`;
+    }
+
+    function applyResponsiveGridColumns() {
+      const isDesktop = window.innerWidth >= 768;
+      document.querySelectorAll("#scoring-rows-container > div").forEach(el => {
+        el.style.gridTemplateColumns = isDesktop ? (el.dataset.cols || "") : "";
+      });
+    }
+    window.addEventListener("resize", applyResponsiveGridColumns);
+
+    function getRowHighlightClass(scoreVal) {
+      if (SESSION.role === "cadre") {
+        const n = Number(scoreVal);
+        if (n <= 75) return "bg-rose-50/80 border-rose-300";
+        if (n < 80) return "bg-amber-50/60 border-amber-300";
+        if (n > 80) return "bg-emerald-50/60 border-emerald-300";
+        return "bg-white border-slate-200";
+      } else if (SESSION.role === "teacher") {
+        const n = Number(scoreVal);
+        if (n < 0) return "bg-rose-50/80 border-rose-300";
+        if (n > 0) return "bg-emerald-50/60 border-emerald-300";
+        return "bg-white border-slate-200";
+      } else if (SESSION.role === "flowerbed") {
+        if (scoreVal === "無") return "bg-slate-100/80 border-slate-300";
+        const n = Number(scoreVal);
+        if (n < 5) return "bg-rose-50/80 border-rose-300";
+        if (n > 5) return "bg-emerald-50/60 border-emerald-300";
+        return "bg-white border-slate-200";
+      } else if (SESSION.role === "coop") {
+        if (Number(scoreVal) < 0) return "bg-rose-50/80 border-rose-300";
+        return "bg-white border-slate-200";
+      }
+      return "bg-white border-slate-200";
+    }
+
+    function onScoringInput(clsId, field, val) {
+      if (!SESSION.scoringDrafts[clsId]) return;
+      SESSION.scoringDrafts[clsId][field] = val;
+      if (field === "score") {
+        const rowDiv = document.getElementById(`srow-${clsId}`);
+        if (rowDiv) {
+          const base = "rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ";
+          rowDiv.className = base + getRowHighlightClass(val);
+        }
+      }
+    }
+
+    function submitScoringForm() {
+      const roundNum = Number(DB.settings.activeRound);
+      const rData = DB.rounds[roundNum];
+      const nowStr = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+
+      Object.entries(SESSION.scoringDrafts).forEach(([targetClassId, draft]) => {
+        if (SESSION.role === "cadre") {
+          const u = SESSION.user;
+          rData.cadre = rData.cadre.filter(x => !(x.scorerClassId === u.classId && x.targetClassId === targetClassId));
+          rData.cadre.push({
+            id: "C_" + roundNum + "_" + u.classId + "_" + targetClassId,
+            scorerClassId: u.classId,
+            scorerClassNum: u.classNum,
+            scorerName: SESSION.isAdminProxy ? `${u.name}(衛生組代填)` : u.name,
+            targetClassId: targetClassId,
+            area: u.area,
+            score: Number(draft.score),
+            remark: draft.remark.trim(),
+            time: nowStr
+          });
+        } else if (SESSION.role === "teacher") {
+          const u = SESSION.user;
+          rData.teacher = rData.teacher.filter(x => !(x.teacherId === u.id && x.targetClassId === targetClassId));
+          rData.teacher.push({
+            id: "T_" + roundNum + "_" + u.id + "_" + targetClassId,
+            teacherId: u.id,
+            teacherName: SESSION.isAdminProxy ? `${u.name}(衛生組代填)` : u.name,
+            targetClassId: targetClassId,
+            score: Number(draft.score),
+            remark: draft.remark.trim(),
+            time: nowStr
+          });
+        } else if (SESSION.role === "flowerbed") {
+          const u = SESSION.user;
+          rData.flowerbed = rData.flowerbed.filter(x => !(x.fbId === u.id && x.zone === u.zone && x.targetClassId === targetClassId));
+          rData.flowerbed.push({
+            id: "FB_" + roundNum + "_" + u.id + "_" + u.zone + "_" + targetClassId,
+            fbId: u.id,
+            fbName: u.name,
+            zone: u.zone,
+            targetClassId: targetClassId,
+            score: draft.score === "無" ? "無" : Number(draft.score),
+            remark: draft.remark.trim(),
+            time: nowStr
+          });
+        } else if (SESSION.role === "coop") {
+          const u = SESSION.user;
+          rData.coop = rData.coop.filter(x => x.targetClassId !== targetClassId);
+          rData.coop.push({
+            id: "CP_" + roundNum + "_" + targetClassId,
+            coopId: "COOP_SINGLE",
+            coopName: u.name,
+            targetClassId: targetClassId,
+            score: Number(draft.score),
+            remark: draft.remark.trim(),
+            time: nowStr
+          });
+        }
+      });
+
+      saveDB();
+      showToast("🎉 已成功送出 16 個班級的評分紀錄！", "success");
+
+      if (SESSION.isAdminProxy) {
+        SESSION.role = "admin";
+        SESSION.user = { name: "衛生組長" };
+        SESSION.isAdminProxy = false;
+        document.getElementById("view-scoring").classList.add("hidden");
+        document.getElementById("view-admin").classList.remove("hidden");
+        switchAdminTab("progress");
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    // =========================================================================
+    // 6. 核心計分引擎（100% 依大掃除辦法權重比例計算）
+    // =========================================================================
+    function getFlowerbedColumnsMeta(rData) {
+      // 依花圃評分師長名單順序，整合實際送出的「師長 + 區域(前走廊/後走廊)」欄位
+      const cols = [];
+      const seen = new Set();
+      DB.staff.flowerbeds.forEach(fb => {
+        const recs = rData.flowerbed.filter(x => x.fbId === fb.id);
+        const zones = [...new Set(recs.map(x => x.zone || "前走廊"))];
+        if (zones.length === 0) {
+          const key = `${fb.id}|default`;
+          seen.add(key);
+          cols.push({ fbId: fb.id, fbName: fb.name, zone: "" });
+        } else {
+          zones.forEach(z => {
+            const key = `${fb.id}|${z}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              cols.push({ fbId: fb.id, fbName: fb.name, zone: z });
+            }
+          });
+        }
+      });
+      return cols;
+    }
+
+    function computeGradeStandings(roundNum, gradeNum) {
+      const rData = DB.rounds[Number(roundNum)] || { cadre: [], teacher: [], flowerbed: [], coop: [] };
+      const g = Number(gradeNum);
+      const isSenior3 = (g === 3);
+
+      const scorerGrade = g === 1 ? 2 : (g === 2 ? 3 : 1);
+      const pubScorerClasses = [];
+      const respScorerClasses = [];
+      const toiletScorerClasses = [];
+
+      for (let c = 1; c <= 16; c++) {
+        const scid = String(scorerGrade * 100 + c);
+        const area = getCadreAssignedArea(roundNum, c);
+        if (area === "公共區") pubScorerClasses.push(scid);
+        else if (area === "責任區") respScorerClasses.push(scid);
+        else toiletScorerClasses.push(scid);
+      }
+
+      const fbColsMeta = isSenior3 ? [] : getFlowerbedColumnsMeta(rData);
+
+      const rows = [];
+      for (let c = 1; c <= 16; c++) {
+        const clsId = String(g * 100 + c);
+
+        // 公共區
+        const pubScores = pubScorerClasses.map(scid => {
+          const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "公共區");
+          return rec ? Number(rec.score) : null;
+        });
+        const validPub = pubScores.filter(v => v !== null);
+        const pubRawAvg = validPub.length > 0 ? validPub.reduce((a, b) => a + b, 0) / validPub.length : 80;
+        const pubWeight = isSenior3 ? 0.30 : 0.25;
+        const pubWeighted = pubRawAvg * pubWeight;
+
+        // 責任區
+        const respScores = respScorerClasses.map(scid => {
+          const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "責任區");
+          return rec ? Number(rec.score) : null;
+        });
+        const validResp = respScores.filter(v => v !== null);
+        const respRawAvg = validResp.length > 0 ? validResp.reduce((a, b) => a + b, 0) / validResp.length : 80;
+        const respWeight = isSenior3 ? 0.30 : 0.25;
+        const respWeighted = respRawAvg * respWeight;
+
+        // 班廁
+        const toiletScores = toiletScorerClasses.map(scid => {
+          const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "班廁");
+          return rec ? Number(rec.score) : null;
+        });
+        const validToilet = toiletScores.filter(v => v !== null);
+        const toiletRawAvg = validToilet.length > 0 ? validToilet.reduce((a, b) => a + b, 0) / validToilet.length : 80;
+        const toiletWeight = 0.40;
+        const toiletWeighted = toiletRawAvg * toiletWeight;
+
+        // 花圃（高一、高二有，高三無；選「無」自動排除分母）
+        let fbScores = [];
+        let fbAvg = 0;
+        if (!isSenior3) {
+          fbScores = fbColsMeta.map(col => {
+            const rec = col.zone
+              ? rData.flowerbed.find(x => x.fbId === col.fbId && x.zone === col.zone && x.targetClassId === clsId)
+              : rData.flowerbed.find(x => x.fbId === col.fbId && x.targetClassId === clsId);
+            if (!rec) return null;
+            return rec.score === "無" ? "無" : Number(rec.score);
+          });
+          const validFb = fbScores.filter(v => typeof v === "number");
+          fbAvg = validFb.length > 0 ? validFb.reduce((a, b) => a + b, 0) / validFb.length : 5;
+        }
+
+        // 合作社餐車
+        const coopRec = rData.coop.find(x => x.targetClassId === clsId);
+        const cartScore = coopRec ? Number(coopRec.score) : 0;
+
+        // 師長評分
+        const teaRecs = rData.teacher.filter(x => x.targetClassId === clsId);
+        const teacherScore = teaRecs.reduce((sum, r) => sum + Number(r.score), 0);
+
+        const totalScore = isSenior3
+          ? (pubWeighted + respWeighted + toiletWeighted + cartScore + teacherScore)
+          : (pubWeighted + respWeighted + toiletWeighted + fbAvg + cartScore + teacherScore);
+
+        rows.push({
+          classId: clsId,
+          pubScores, pubRawAvg, pubWeighted,
+          respScores, respRawAvg, respWeighted,
+          toiletScores, toiletRawAvg, toiletWeighted,
+          fbColsMeta, fbScores, fbAvg,
+          cartScore,
+          teacherScore,
+          totalScore,
+          rank: 1
+        });
+      }
+
+      const sorted = [...rows].sort((a, b) => b.totalScore - a.totalScore);
+      rows.forEach(r => {
+        const idx = sorted.findIndex(s => Math.abs(s.totalScore - r.totalScore) < 0.0001);
+        r.rank = idx + 1;
+      });
+
+      return rows;
+    }
+
+    // =========================================================================
+    // 7. 班級查詢視圖渲染
+    // =========================================================================
+    function renderClassInquiryView() {
+      const clsId = SESSION.user.classId;
+      const g = Number(clsId[0]);
+      const roundNum = Number(document.getElementById("inq-round-select").value);
+      const isSenior3 = (g === 3);
+
+      document.getElementById("inq-title").textContent = `${clsId} 班大掃除比賽成績查詢`;
+      document.getElementById("inq-subtitle").textContent =
+        `${DB.settings.academicYear}學年度第 ${DB.settings.semester} 學期｜${getRoundLabel(roundNum)}`;
+
+      const standings = computeGradeStandings(roundNum, g);
+      const me = standings.find(r => r.classId === clsId);
+
+      document.getElementById("inq-total-score").textContent = me.totalScore.toFixed(2);
+      document.getElementById("inq-rank-badge").textContent = `第 ${me.rank} 名`;
+
+      const rewardBanner = document.getElementById("inq-reward-banner");
+      if (me.rank <= 6) {
+        rewardBanner.classList.remove("hidden");
+      } else {
+        rewardBanner.classList.add("hidden");
+      }
+
+      document.getElementById("inq-weight-formula-text").textContent = isSenior3
+        ? "高三計分公式：(公共區平均 × 30%) ＋ (責任區平均 × 30%) ＋ (班廁平均 × 40%) ＋ 推車 ＋ 師長"
+        : "高一、二計分公式：(公共區平均 × 25%) ＋ (責任區平均 × 25%) ＋ (班廁平均 × 40%) ＋ 花圃平均(10%) ＋ 推車 ＋ 師長";
+
+      const breakdown = document.getElementById("inq-breakdown-grid");
+      let cardsHtml = `
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <p class="text-xs-force font-bold text-slate-500">公共區（佔 ${isSenior3 ? "30%" : "25%"}）</p>
+          <p class="text-xl font-extrabold text-slate-900 mt-1">${me.pubWeighted.toFixed(2)} <span class="text-xs-force font-normal text-slate-500">分</span></p>
+          <p class="text-[11px] text-slate-400 mt-0.5">原始平均 ${me.pubRawAvg.toFixed(1)} × ${isSenior3 ? "30%" : "25%"}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <p class="text-xs-force font-bold text-slate-500">責任區（佔 ${isSenior3 ? "30%" : "25%"}）</p>
+          <p class="text-xl font-extrabold text-slate-900 mt-1">${me.respWeighted.toFixed(2)} <span class="text-xs-force font-normal text-slate-500">分</span></p>
+          <p class="text-[11px] text-slate-400 mt-0.5">原始平均 ${me.respRawAvg.toFixed(1)} × ${isSenior3 ? "30%" : "25%"}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <p class="text-xs-force font-bold text-slate-500">班廁（佔 40%）</p>
+          <p class="text-xl font-extrabold text-slate-900 mt-1">${me.toiletWeighted.toFixed(2)} <span class="text-xs-force font-normal text-slate-500">分</span></p>
+          <p class="text-[11px] text-slate-400 mt-0.5">原始平均 ${me.toiletRawAvg.toFixed(1)} × 40%</p>
+        </div>
+      `;
+
+      if (!isSenior3) {
+        const fbDetail = me.fbColsMeta.map((col, idx) => `${col.zone || col.fbName}:${me.fbScores[idx] ?? "-"}`).join(" / ");
+        cardsHtml += `
+          <div class="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200">
+            <p class="text-xs-force font-bold text-emerald-800">前後花圃（佔 10%）</p>
+            <p class="text-xl font-extrabold text-emerald-900 mt-1">${me.fbAvg.toFixed(2)} <span class="text-xs-force font-normal text-emerald-700">分</span></p>
+            <p class="text-[11px] text-emerald-700 mt-0.5 truncate">${fbDetail}</p>
+          </div>
+        `;
+      }
+
+      cardsHtml += `
+        <div class="p-3.5 rounded-xl bg-orange-50/60 border border-orange-200">
+          <p class="text-xs-force font-bold text-orange-800">合作社餐車</p>
+          <p class="text-xl font-extrabold text-orange-900 mt-1">${me.cartScore > 0 ? "+" : ""}${me.cartScore.toFixed(1)} <span class="text-xs-force font-normal text-orange-700">分</span></p>
+          <p class="text-[11px] text-orange-700 mt-0.5">${me.cartScore === 0 ? "正常無扣分" : "未推回刷洗放整齊"}</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-200">
+          <p class="text-xs-force font-bold text-indigo-800">師長巡檢加減分</p>
+          <p class="text-xl font-extrabold text-indigo-900 mt-1">${me.teacherScore > 0 ? "+" : ""}${me.teacherScore.toFixed(1)} <span class="text-xs-force font-normal text-indigo-700">分</span></p>
+          <p class="text-[11px] text-indigo-700 mt-0.5">加減分範圍 -3.0 ~ +3.0</p>
+        </div>
+      `;
+      breakdown.innerHTML = cardsHtml;
+
+      const rData = DB.rounds[roundNum];
+      const remarks = [];
+      rData.cadre.filter(x => x.targetClassId === clsId && x.remark).forEach(x => {
+        remarks.push({ tag: `${x.area}評語`, score: `${x.score} 分`, text: x.remark });
+      });
+      rData.flowerbed.filter(x => x.targetClassId === clsId && x.remark).forEach(x => {
+        remarks.push({ tag: `花圃評語（${x.zone || "花圃"}）`, score: `${x.score} 分`, text: x.remark });
+      });
+      rData.coop.filter(x => x.targetClassId === clsId && x.remark).forEach(x => {
+        remarks.push({ tag: `合作社餐車評語`, score: `${x.score} 分`, text: x.remark });
+      });
+      rData.teacher.filter(x => x.targetClassId === clsId && x.remark).forEach(x => {
+        remarks.push({ tag: `師長評語`, score: `${x.score > 0 ? "+" : ""}${x.score} 分`, text: x.remark });
+      });
+
+      const remBox = document.getElementById("inq-remarks-list");
+      if (remarks.length === 0) {
+        remBox.innerHTML = '<p class="text-xs-force text-slate-400 py-4 text-center">本場次各區皆無額外備註留言。</p>';
+      } else {
+        remBox.innerHTML = remarks.map(rm => `
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-2 text-xs-force">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-bold mr-1.5">${rm.tag}</span>
+              <span class="text-slate-800 font-medium">${rm.text}</span>
+            </div>
+            <span class="font-extrabold text-slate-700 shrink-0">${rm.score}</span>
+          </div>
+        `).join("");
+      }
+    }
+
+    // =========================================================================
+    // 8. 衛生組後台管理
+    // =========================================================================
+    function initAdminWorkspace() {
+      const rStr = String(DB.settings.activeRound);
+      document.getElementById("top-active-round").value = rStr;
+      document.getElementById("rep-round-select").value = rStr;
+      document.getElementById("prog-round-select").value = rStr;
+      document.getElementById("bf-round").value = rStr;
+      document.getElementById("log-round-filter").value = rStr;
+
+      const bfTarget = document.getElementById("bf-target-class");
+      const logClass = document.getElementById("log-class-filter");
+      bfTarget.innerHTML = "";
+      logClass.innerHTML = '<option value="all">全部受評班級</option>';
+      [1, 2, 3].forEach(g => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          bfTarget.innerHTML += `<option value="${cid}">${cid} 班</option>`;
+          logClass.innerHTML += `<option value="${cid}">${cid} 班</option>`;
+        }
+      });
+
+      onBackfillTypeChange();
+      switchAdminTab("report");
+    }
+
+    function quickSaveTopRound() {
+      const newRound = Number(document.getElementById("top-active-round").value);
+      DB.settings.activeRound = newRound;
+      saveDB();
+      refreshHeaderAndHome();
+      document.getElementById("rep-round-select").value = String(newRound);
+      document.getElementById("prog-round-select").value = String(newRound);
+      showToast(`✅ 已切換並同步全校為【${getRoundLabel(newRound)}】！`, "success");
+    }
+
+    function switchAdminTab(tab) {
+      ["report", "progress", "backfill", "settings"].forEach(t => {
+        const btn = document.getElementById("atab-" + t);
+        const pane = document.getElementById("admin-pane-" + t);
+        if (t === tab) {
+          btn.className = "px-4 py-2.5 rounded-xl bg-slate-900 text-white whitespace-nowrap";
+          pane.classList.remove("hidden");
+        } else {
+          btn.className = "px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 whitespace-nowrap";
+          pane.classList.add("hidden");
+        }
+      });
+
+      if (tab === "report") renderAdminSummaryReport();
+      else if (tab === "progress") renderAdminProgressPane();
+      else if (tab === "backfill") renderAdminLogsTable();
+      else if (tab === "settings") renderAdminSettingsPane();
+    }
+
+    // 8.1 總成績報表
+    function switchReportGrade(g) {
+      SESSION.adminReportGrade = Number(g);
+      [1, 2, 3].forEach(idx => {
+        const btn = document.getElementById("rep-gbtn-" + idx);
+        btn.className = idx === SESSION.adminReportGrade
+          ? "px-3.5 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs"
+          : "px-3.5 py-1.5 rounded-lg text-slate-600";
+      });
+      renderAdminSummaryReport();
+    }
+
+    function renderAdminSummaryReport() {
+      const roundNum = Number(document.getElementById("rep-round-select").value);
+      const g = SESSION.adminReportGrade;
+      const isSenior3 = (g === 3);
+
+      document.getElementById("rep-weight-banner").textContent = isSenior3
+        ? `📐 【${getRoundLabel(roundNum)}・高三計分比例】：公共區平均 (30%) ＋ 責任區平均 (30%) ＋ 班廁平均 (40%) ＋ 推車 ＋ 師長｜第 1～6 名頒發獎狀鼓勵`
+        : `📐 【${getRoundLabel(roundNum)}・${g === 1 ? "高一" : "高二"}計分比例】：公共區平均 (25%) ＋ 責任區平均 (25%) ＋ 班廁平均 (40%) ＋ 花圃平均 (10%) ＋ 推車 ＋ 師長｜第 1～6 名頒發獎狀鼓勵`;
+
+      const standings = computeGradeStandings(roundNum, g);
+      const thead = document.getElementById("rep-table-head");
+      const tbody = document.getElementById("rep-table-body");
+      const fbColsMeta = standings[0] ? standings[0].fbColsMeta : [];
+
+      const fbHeaders = isSenior3
+        ? ""
+        : fbColsMeta.map(col => `<th class="py-2.5 px-2 whitespace-nowrap bg-emerald-900">${col.fbName}${col.zone ? `<br><span class="font-normal text-[11px]">(${col.zone})</span>` : ""}</th>`).join("") +
+          `<th class="py-2.5 px-2 whitespace-nowrap bg-emerald-800">花圃平均<br>(10%)</th>`;
+
+      thead.innerHTML = `
+        <tr class="bg-slate-800 text-white">
+          <th class="py-2.5 px-2.5 whitespace-nowrap sticky-col bg-slate-900">班級</th>
+          <th class="py-2.5 px-1.5">公1</th><th class="py-2.5 px-1.5">公2</th><th class="py-2.5 px-1.5">公3</th><th class="py-2.5 px-1.5">公4</th><th class="py-2.5 px-1.5">公5</th><th class="py-2.5 px-1.5">公6</th>
+          <th class="py-2.5 px-2 whitespace-nowrap bg-teal-900">公平均<br>(${isSenior3 ? "30%" : "25%"})</th>
+          <th class="py-2.5 px-1.5">責1</th><th class="py-2.5 px-1.5">責2</th><th class="py-2.5 px-1.5">責3</th><th class="py-2.5 px-1.5">責4</th><th class="py-2.5 px-1.5">責5</th><th class="py-2.5 px-1.5">責6</th>
+          <th class="py-2.5 px-2 whitespace-nowrap bg-teal-900">責平均<br>(${isSenior3 ? "30%" : "25%"})</th>
+          <th class="py-2.5 px-1.5">廁1</th><th class="py-2.5 px-1.5">廁2</th><th class="py-2.5 px-1.5">廁3</th><th class="py-2.5 px-1.5">廁4</th><th class="py-2.5 px-1.5">廁5</th><th class="py-2.5 px-1.5">廁6</th>
+          <th class="py-2.5 px-2 whitespace-nowrap bg-teal-900">廁平均<br>(40%)</th>
+          ${fbHeaders}
+          <th class="py-2.5 px-2 whitespace-nowrap">推車</th>
+          <th class="py-2.5 px-2 whitespace-nowrap">師長</th>
+          <th class="py-2.5 px-2.5 whitespace-nowrap bg-slate-950">總分</th>
+          <th class="py-2.5 px-2 whitespace-nowrap bg-slate-950">名次</th>
+          <th class="py-2.5 px-3 whitespace-nowrap bg-slate-950">獎勵標記</th>
+        </tr>
+      `;
+
+      const cell6 = arr => {
+        let out = "";
+        for (let i = 0; i < 6; i++) {
+          const v = arr[i];
+          out += `<td class="py-2 px-1.5 text-slate-600">${v === undefined ? "-" : (v === null ? "缺" : v)}</td>`;
+        }
+        return out;
+      };
+
+      tbody.innerHTML = standings.map(r => {
+        const fbCells = isSenior3
+          ? ""
+          : r.fbScores.map(v => `<td class="py-2 px-2 text-emerald-900 bg-emerald-50/30">${v === null ? "-" : v}</td>`).join("") +
+            `<td class="py-2 px-2 font-extrabold text-emerald-900 bg-emerald-50/70">${r.fbAvg.toFixed(2)}</td>`;
+
+        const rewardBadge = r.rank <= 6
+          ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-extrabold whitespace-nowrap">🏆 前六名（獎狀鼓勵）</span>`
+          : `<span class="text-slate-300">-</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2 px-2.5 font-extrabold text-slate-900 sticky-col bg-white border-r border-slate-200">${r.classId}</td>
+            ${cell6(r.pubScores)}
+            <td class="py-2 px-2 font-extrabold text-teal-900 bg-teal-50/60">${r.pubWeighted.toFixed(2)}</td>
+            ${cell6(r.respScores)}
+            <td class="py-2 px-2 font-extrabold text-teal-900 bg-teal-50/60">${r.respWeighted.toFixed(2)}</td>
+            ${cell6(r.toiletScores)}
+            <td class="py-2 px-2 font-extrabold text-teal-900 bg-teal-50/60">${r.toiletWeighted.toFixed(2)}</td>
+            ${fbCells}
+            <td class="py-2 px-2 font-bold ${r.cartScore < 0 ? "text-rose-600" : "text-slate-700"}">${r.cartScore}</td>
+            <td class="py-2 px-2 font-bold ${r.teacherScore < 0 ? "text-rose-600" : (r.teacherScore > 0 ? "text-emerald-700" : "text-slate-700")}">${r.teacherScore > 0 ? "+" : ""}${r.teacherScore.toFixed(1)}</td>
+            <td class="py-2 px-2.5 font-extrabold text-slate-950 bg-slate-100">${r.totalScore.toFixed(2)}</td>
+            <td class="py-2 px-2 font-extrabold ${r.rank <= 6 ? "text-amber-700" : "text-slate-700"}">${r.rank}</td>
+            <td class="py-2 px-3">${rewardBadge}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function exportSummaryExcel() {
+      if (typeof XLSX === "undefined") {
+        showToast("Excel 匯出元件載入中，請稍候再試。", "warning");
+        return;
+      }
+      const roundNum = Number(document.getElementById("rep-round-select").value);
+      const roundTitle = getRoundLabel(roundNum);
+      const wb = XLSX.utils.book_new();
+
+      [3, 2, 1].forEach(g => {
+        const isSenior3 = (g === 3);
+        const sheetName = { 3: "高三", 2: "高二", 1: "高一" }[g];
+        const standings = computeGradeStandings(roundNum, g);
+        const fbColsMeta = standings[0] ? standings[0].fbColsMeta : [];
+
+        const titleRow = [`國立嘉義女中 ${DB.settings.academicYear}學年度第${DB.settings.semester}學期${roundTitle}統計總表（${sheetName}）`];
+        let headerRow = [
+          "班級",
+          "公1", "公2", "公3", "公4", "公5", "公6", `公平均(${isSenior3 ? "30%" : "25%"})`,
+          "責1", "責2", "責3", "責4", "責5", "責6", `責平均(${isSenior3 ? "30%" : "25%"})`,
+          "廁1", "廁2", "廁3", "廁4", "廁5", "廁6", "廁平均(40%)"
+        ];
+        if (!isSenior3) {
+          fbColsMeta.forEach(col => headerRow.push(`${col.fbName}${col.zone ? `(${col.zone})` : ""}`));
+          headerRow.push("花圃平均(10%)");
+        }
+        headerRow.push("推車", "師長", "總分", "名次", "獎勵標記");
+
+        const aoa = [titleRow, headerRow];
+
+        standings.forEach((r, idx) => {
+          const excelRow = idx + 3;
+          const pad6 = arr => [0, 1, 2, 3, 4, 5].map(i => (arr[i] === undefined || arr[i] === null) ? "" : arr[i]);
+
+          const rowVals = [
+            Number(r.classId),
+            ...pad6(r.pubScores),
+            { f: `IFERROR(AVERAGE(B${excelRow}:G${excelRow})*${isSenior3 ? 0.3 : 0.25}, ${isSenior3 ? 24 : 20})` },
+            ...pad6(r.respScores),
+            { f: `IFERROR(AVERAGE(I${excelRow}:N${excelRow})*${isSenior3 ? 0.3 : 0.25}, ${isSenior3 ? 24 : 20})` },
+            ...pad6(r.toiletScores),
+            { f: `IFERROR(AVERAGE(P${excelRow}:U${excelRow})*0.4, 32)` }
+          ];
+
+          if (isSenior3) {
+            rowVals.push(
+              r.cartScore,
+              r.teacherScore,
+              { f: `H${excelRow}+O${excelRow}+V${excelRow}+W${excelRow}+X${excelRow}` },
+              { f: `RANK(Y${excelRow},$Y$3:$Y$18)` },
+              r.rank <= 6 ? "🏆 前六名（獎狀鼓勵）" : ""
+            );
+          } else {
+            const fbStartCol = 22;
+            fbColsMeta.forEach((_, fIdx) => {
+              const v = r.fbScores[fIdx];
+              rowVals.push(v === null || v === undefined ? "" : v);
+            });
+            const fbStartLetter = XLSX.utils.encode_col(fbStartCol);
+            const fbEndLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length - 1);
+            const fbAvgLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length);
+            const cartLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 1);
+            const teaLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 2);
+            const totalLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 3);
+
+            rowVals.push(
+              { f: `IFERROR(AVERAGE(${fbStartLetter}${excelRow}:${fbEndLetter}${excelRow}), 5)` },
+              r.cartScore,
+              r.teacherScore,
+              { f: `H${excelRow}+O${excelRow}+V${excelRow}+${fbAvgLetter}${excelRow}+${cartLetter}${excelRow}+${teaLetter}${excelRow}` },
+              { f: `RANK(${totalLetter}${excelRow},$${totalLetter}$3:$${totalLetter}$18)` },
+              r.rank <= 6 ? "🏆 前六名（獎狀鼓勵）" : ""
+            );
+          }
+          aoa.push(rowVals);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+
+      const fileName = `${DB.settings.academicYear}學年度第${DB.settings.semester}學期_${roundTitle}_統計總表.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      showToast(`📥 已成功匯出「${fileName}」！`, "success");
+    }
+
+    // 8.2 送出進度與衛生組整班代填
+    function renderAdminProgressPane() {
+      const roundNum = Number(document.getElementById("prog-round-select").value);
+      const rData = DB.rounds[roundNum];
+
+      const staffContainer = document.getElementById("prog-staff-cards");
+      const teaHtml = DB.staff.teachers.map(t => {
+        const cnt = rData.teacher.filter(x => x.teacherId === t.id).length;
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-xs-force">
+            <div>
+              <span class="font-extrabold text-slate-900">${t.name}</span>
+              <span class="text-slate-500 ml-1">（已登錄 ${cnt} 班）</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="startAdminProxyTeacher('${t.id}', 1, ${roundNum})" class="px-2 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-bold">高一</button>
+              <button type="button" onclick="startAdminProxyTeacher('${t.id}', 2, ${roundNum})" class="px-2 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-bold">高二</button>
+              <button type="button" onclick="startAdminProxyTeacher('${t.id}', 3, ${roundNum})" class="px-2 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-bold">高三</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const fbHtml = DB.staff.flowerbeds.map(fb => {
+        const cntFront = rData.flowerbed.filter(x => x.fbId === fb.id && x.zone === "前走廊").length;
+        const cntBack = rData.flowerbed.filter(x => x.fbId === fb.id && x.zone === "後走廊").length;
+        return `
+          <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-xs-force">
+            <div>
+              <span class="font-extrabold text-slate-900">${fb.name}</span>
+              <span class="text-slate-500 ml-1">（前${cntFront}/32・後${cntBack}/32）</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="startAdminProxyFlowerbed('${fb.id}', '前走廊', ${roundNum})" class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold">前走廊</button>
+              <button type="button" onclick="startAdminProxyFlowerbed('${fb.id}', '後走廊', ${roundNum})" class="px-2 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold">後走廊</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const coopDone = rData.coop.length;
+      const coopName = rData.coop[0] ? rData.coop[0].coopName : "合作社人員";
+      const coopHtml = `
+        <div class="flex items-center justify-between py-2 text-xs-force">
+          <div>
+            <span class="font-extrabold text-slate-900">全校團膳餐車</span>
+            <span class="text-slate-500 ml-1">（已登錄 ${coopDone}/48 班）</span>
+          </div>
+          <button type="button" onclick="startAdminProxyCoop('${coopName.replace(/'/g, "")}', ${roundNum})" class="px-2.5 py-1 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold">✍️ 代填/修改</button>
+        </div>
+      `;
+
+      staffContainer.innerHTML = `
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+          <h4 class="text-sm-force font-extrabold text-indigo-950 mb-2">👩‍🏫 師長評分進度（點年級代填）</h4>
+          ${teaHtml}
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+          <h4 class="text-sm-force font-extrabold text-emerald-950 mb-2">🌺 花圃評分進度（點區域代填）</h4>
+          ${fbHtml}
+        </div>
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+          <h4 class="text-sm-force font-extrabold text-orange-950 mb-2">🍱 合作社餐車進度</h4>
+          ${coopHtml}
+        </div>
+      `;
+
+      const cadreContainer = document.getElementById("prog-cadre-grades");
+      cadreContainer.innerHTML = [1, 2, 3].map(g => {
+        const gTitle = { 1: "高一幹部（評高三）", 2: "高二幹部（評高一）", 3: "高三幹部（評高二）" }[g];
+        let rowsHtml = "";
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          const area = getCadreAssignedArea(roundNum, c);
+          const recs = rData.cadre.filter(x => x.scorerClassId === cid);
+          const isDone = recs.length >= 16;
+          const scorerName = recs[0] ? recs[0].scorerName : "";
+
+          rowsHtml += `
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-xs-force">
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-slate-900">${cid}</span>
+                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">${area}</span>
+                ${isDone
+                  ? `<span class="text-emerald-700 font-bold">✅ 已送出 (${scorerName})</span>`
+                  : `<span class="text-rose-600 font-bold">⏳ 未送出</span>`}
+              </div>
+              <button type="button" onclick="startAdminProxyCadre(${g}, ${c}, ${roundNum})" class="px-2.5 py-1 rounded-lg ${isDone ? "bg-slate-100 text-slate-700" : "bg-teal-600 text-white"} font-bold">
+                ${isDone ? "修改" : "✍️ 衛生組代填"}
+              </button>
+            </div>
+          `;
+        }
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+            <h4 class="text-sm-force font-extrabold text-slate-900 mb-2 pb-2 border-b border-slate-100">${gTitle}</h4>
+            <div>${rowsHtml}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function startAdminProxyCadre(grade, classNum, roundNum) {
+      DB.settings.activeRound = Number(roundNum);
+      saveDB();
+      const classId = String(grade * 100 + classNum);
+      const targetGrade = getCadreTargetGrade(grade);
+      const area = getCadreAssignedArea(roundNum, classNum);
+
+      SESSION.role = "cadre";
+      SESSION.isAdminProxy = true;
+      SESSION.user = { grade, classNum, classId, name: "服務股長", targetGrade, area };
+      SESSION.scoringGradeTab = targetGrade;
+      enterScoringWorkspace();
+    }
+
+    function startAdminProxyTeacher(tid, targetGrade, roundNum) {
+      DB.settings.activeRound = Number(roundNum);
+      saveDB();
+      const t = DB.staff.teachers.find(x => x.id === tid);
+      if (!t) return;
+      SESSION.role = "teacher";
+      SESSION.isAdminProxy = true;
+      SESSION.user = { id: t.id, name: t.name, targetGrade: Number(targetGrade) };
+      SESSION.scoringGradeTab = Number(targetGrade);
+      enterScoringWorkspace();
+    }
+
+    function startAdminProxyFlowerbed(fbId, zone, roundNum) {
+      DB.settings.activeRound = Number(roundNum);
+      saveDB();
+      const fb = DB.staff.flowerbeds.find(x => x.id === fbId);
+      if (!fb) return;
+      SESSION.role = "flowerbed";
+      SESSION.isAdminProxy = true;
+      SESSION.user = { id: fb.id, name: fb.name, zone };
+      SESSION.scoringGradeTab = 1;
+      enterScoringWorkspace();
+    }
+
+    function startAdminProxyCoop(name, roundNum) {
+      DB.settings.activeRound = Number(roundNum);
+      saveDB();
+      SESSION.role = "coop";
+      SESSION.isAdminProxy = true;
+      SESSION.user = { id: "COOP_SINGLE", name: name || "合作社人員" };
+      SESSION.scoringGradeTab = 1;
+      enterScoringWorkspace();
+    }
+
+    // 8.3 單筆補填與明細修改
+    function onBackfillTypeChange() {
+      const type = document.getElementById("bf-type").value;
+      const srcSel = document.getElementById("bf-source");
+      const scoreSel = document.getElementById("bf-score");
+      srcSel.innerHTML = "";
+      scoreSel.innerHTML = "";
+
+      if (type === "cadre") {
+        [1, 2, 3].forEach(g => {
+          for (let c = 1; c <= 16; c++) {
+            const cid = String(g * 100 + c);
+            srcSel.innerHTML += `<option value="${cid}">${cid} 班服務股長</option>`;
+          }
+        });
+        for (let s = 85; s >= 75; s--) {
+          scoreSel.innerHTML += `<option value="${s}" ${s === 80 ? "selected" : ""}>${s} 分</option>`;
+        }
+      } else if (type === "teacher") {
+        DB.staff.teachers.forEach(t => {
+          srcSel.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+        });
+        for (let t = 30; t >= -30; t -= 5) {
+          const v = (t / 10).toFixed(1);
+          scoreSel.innerHTML += `<option value="${v}" ${t === 0 ? "selected" : ""}>${t > 0 ? "+" : ""}${v} 分</option>`;
+        }
+      } else if (type === "flowerbed") {
+        DB.staff.flowerbeds.forEach(fb => {
+          srcSel.innerHTML += `<option value="${fb.id}|前走廊">${fb.name}（前走廊）</option>`;
+          srcSel.innerHTML += `<option value="${fb.id}|後走廊">${fb.name}（後走廊）</option>`;
+        });
+        scoreSel.innerHTML += `<option value="無">無（未分配花圃）</option>`;
+        for (let s = 10; s >= 0; s--) {
+          scoreSel.innerHTML += `<option value="${s}" ${s === 5 ? "selected" : ""}>${s} 分</option>`;
+        }
+      } else if (type === "coop") {
+        srcSel.innerHTML = `<option value="COOP_SINGLE">合作社代表</option>`;
+        scoreSel.innerHTML += `<option value="0">0 分（正常）</option><option value="-1">-1 分（未推回刷洗放整齊）</option>`;
+      }
+    }
+
+    function submitSingleBackfill() {
+      const roundNum = Number(document.getElementById("bf-round").value);
+      const type = document.getElementById("bf-type").value;
+      const srcVal = document.getElementById("bf-source").value;
+      const targetClassId = document.getElementById("bf-target-class").value;
+      const scoreVal = document.getElementById("bf-score").value;
+      const remark = document.getElementById("bf-remark").value.trim();
+      const rData = DB.rounds[roundNum];
+      const nowStr = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+
+      if (type === "cadre") {
+        const classNum = Number(srcVal.slice(1));
+        const area = getCadreAssignedArea(roundNum, classNum);
+        rData.cadre = rData.cadre.filter(x => !(x.scorerClassId === srcVal && x.targetClassId === targetClassId));
+        rData.cadre.push({
+          id: "C_" + roundNum + "_" + srcVal + "_" + targetClassId,
+          scorerClassId: srcVal,
+          scorerClassNum: classNum,
+          scorerName: "衛生組補填",
+          targetClassId,
+          area,
+          score: Number(scoreVal),
+          remark,
+          time: nowStr
+        });
+      } else if (type === "teacher") {
+        const t = DB.staff.teachers.find(x => x.id === srcVal);
+        rData.teacher = rData.teacher.filter(x => !(x.teacherId === srcVal && x.targetClassId === targetClassId));
+        rData.teacher.push({
+          id: "T_" + roundNum + "_" + srcVal + "_" + targetClassId,
+          teacherId: srcVal,
+          teacherName: t ? t.name : "師長",
+          targetClassId,
+          score: Number(scoreVal),
+          remark,
+          time: nowStr
+        });
+      } else if (type === "flowerbed") {
+        const [fbId, zone] = srcVal.split("|");
+        const fb = DB.staff.flowerbeds.find(x => x.id === fbId);
+        rData.flowerbed = rData.flowerbed.filter(x => !(x.fbId === fbId && x.zone === zone && x.targetClassId === targetClassId));
+        rData.flowerbed.push({
+          id: "FB_" + roundNum + "_" + fbId + "_" + zone + "_" + targetClassId,
+          fbId,
+          fbName: fb ? fb.name : "花圃師長",
+          zone,
+          targetClassId,
+          score: scoreVal === "無" ? "無" : Number(scoreVal),
+          remark,
+          time: nowStr
+        });
+      } else if (type === "coop") {
+        rData.coop = rData.coop.filter(x => x.targetClassId !== targetClassId);
+        rData.coop.push({
+          id: "CP_" + roundNum + "_" + targetClassId,
+          coopId: "COOP_SINGLE",
+          coopName: "合作社補填",
+          targetClassId,
+          score: Number(scoreVal),
+          remark,
+          time: nowStr
+        });
+      }
+
+      saveDB();
+      document.getElementById("bf-remark").value = "";
+      showToast(`✅ 已成功補填 ${targetClassId} 班評分紀錄！`, "success");
+      renderAdminLogsTable();
+    }
+
+    function renderAdminLogsTable() {
+      const roundNum = Number(document.getElementById("log-round-filter").value);
+      const typeFilter = document.getElementById("log-type-filter").value;
+      const clsFilter = document.getElementById("log-class-filter").value;
+      const rData = DB.rounds[roundNum];
+
+      let unified = [];
+      if (typeFilter === "all" || typeFilter === "cadre") {
+        rData.cadre.forEach(x => unified.push({
+          type: "cadre", typeLabel: "幹部評分", id: x.id, targetClassId: x.targetClassId,
+          itemLabel: x.area, sourceLabel: `${x.scorerClassId} ${x.scorerName}`,
+          scoreDisplay: `${x.score} 分`, remark: x.remark || ""
+        }));
+      }
+      if (typeFilter === "all" || typeFilter === "teacher") {
+        rData.teacher.forEach(x => unified.push({
+          type: "teacher", typeLabel: "師長評分", id: x.id, targetClassId: x.targetClassId,
+          itemLabel: "全區巡檢", sourceLabel: x.teacherName,
+          scoreDisplay: `${x.score > 0 ? "+" : ""}${x.score} 分`, remark: x.remark || ""
+        }));
+      }
+      if (typeFilter === "all" || typeFilter === "flowerbed") {
+        rData.flowerbed.forEach(x => unified.push({
+          type: "flowerbed", typeLabel: "花圃評分", id: x.id, targetClassId: x.targetClassId,
+          itemLabel: x.zone || "花圃", sourceLabel: x.fbName,
+          scoreDisplay: x.score === "無" ? "無" : `${x.score} 分`, remark: x.remark || ""
+        }));
+      }
+      if (typeFilter === "all" || typeFilter === "coop") {
+        rData.coop.forEach(x => unified.push({
+          type: "coop", typeLabel: "合作社推車", id: x.id, targetClassId: x.targetClassId,
+          itemLabel: "團膳餐車", sourceLabel: x.coopName,
+          scoreDisplay: `${x.score} 分`, remark: x.remark || ""
+        }));
+      }
+
+      if (clsFilter !== "all") {
+        unified = unified.filter(u => u.targetClassId === clsFilter);
+      }
+
+      const tbody = document.getElementById("admin-logs-tbody");
+      if (unified.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">目前篩選條件下尚無評分紀錄。</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = unified.slice(0, 150).map(u => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 font-bold">${u.typeLabel}</td>
+          <td class="py-2 px-3 font-extrabold text-slate-900">${u.targetClassId}</td>
+          <td class="py-2 px-3">${u.itemLabel}</td>
+          <td class="py-2 px-3 text-slate-600">${u.sourceLabel}</td>
+          <td class="py-2 px-3 font-extrabold text-teal-700">${u.scoreDisplay}</td>
+          <td class="py-2 px-3 text-slate-600">${u.remark || "-"}</td>
+          <td class="py-2 px-3 text-right">
+            <button type="button" onclick="deleteSingleRecord(${roundNum}, '${u.type}', '${u.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold">刪除</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function deleteSingleRecord(roundNum, type, id) {
+      if (!confirm("確定要刪除此筆評分紀錄嗎？")) return;
+      DB.rounds[roundNum][type] = DB.rounds[roundNum][type].filter(x => x.id !== id);
+      saveDB();
+      renderAdminLogsTable();
+      showToast("已刪除該筆紀錄。", "info");
+    }
+
+    // 8.4 名單排序、密碼與掃區設定
+    function renderAdminSettingsPane() {
+      const s = DB.settings;
+      document.getElementById("set-year").value = s.academicYear;
+      document.getElementById("set-sem").value = s.semester;
+      document.getElementById("set-date-str").value = s.dateStr;
+      document.getElementById("set-pw-cadre").value = s.passcodes.cadre;
+      document.getElementById("set-pw-teacher").value = s.passcodes.teacher;
+      document.getElementById("set-pw-flowerbed").value = s.passcodes.flowerbed;
+      document.getElementById("set-pw-coop").value = s.passcodes.coop;
+      document.getElementById("set-pw-admin").value = s.passcodes.admin;
+      document.getElementById("set-broadcast").value = s.broadcast;
+
+      renderStaffLists();
+      renderAdminClassPasswordGrid();
+      renderAdminAreaMapTable();
+    }
+
+    function saveGeneralSettings() {
+      const s = DB.settings;
+      s.academicYear = document.getElementById("set-year").value.trim() || "115";
+      s.semester = document.getElementById("set-sem").value.trim() || "1";
+      s.dateStr = document.getElementById("set-date-str").value.trim();
+      s.passcodes.cadre = document.getElementById("set-pw-cadre").value.trim() || "1234";
+      s.passcodes.teacher = document.getElementById("set-pw-teacher").value.trim() || "5678";
+      s.passcodes.flowerbed = document.getElementById("set-pw-flowerbed").value.trim() || "9999";
+      s.passcodes.coop = document.getElementById("set-pw-coop").value.trim() || "0000";
+      s.passcodes.admin = document.getElementById("set-pw-admin").value.trim() || "1331";
+      s.broadcast = document.getElementById("set-broadcast").value.trim();
+
+      saveDB();
+      refreshHeaderAndHome();
+      showToast("✅ 已儲存學期與通行碼設定！", "success");
+    }
+
+    function renderStaffLists() {
+      // 1. Teachers
+      document.getElementById("list-teachers").innerHTML = DB.staff.teachers.map((t, idx) => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs-force">
+          <div class="flex items-center gap-2">
+            <div class="flex flex-col gap-0.5">
+              <button type="button" onclick="moveStaffItem('teachers', ${idx}, -1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === 0 ? "disabled" : ""}>▲</button>
+              <button type="button" onclick="moveStaffItem('teachers', ${idx}, 1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === DB.staff.teachers.length - 1 ? "disabled" : ""}>▼</button>
+            </div>
+            <span class="font-extrabold text-slate-900">${idx + 1}. ${t.name}</span>
+          </div>
+          <button type="button" onclick="deleteStaffItem('teachers', ${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-bold">刪除</button>
+        </div>
+      `).join("");
+
+      // 2. Flowerbeds
+      document.getElementById("list-flowerbeds").innerHTML = DB.staff.flowerbeds.map((fb, idx) => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs-force">
+          <div class="flex items-center gap-2">
+            <div class="flex flex-col gap-0.5">
+              <button type="button" onclick="moveStaffItem('flowerbeds', ${idx}, -1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === 0 ? "disabled" : ""}>▲</button>
+              <button type="button" onclick="moveStaffItem('flowerbeds', ${idx}, 1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === DB.staff.flowerbeds.length - 1 ? "disabled" : ""}>▼</button>
+            </div>
+            <span class="font-extrabold text-slate-900">${idx + 1}. ${fb.name}</span>
+          </div>
+          <button type="button" onclick="deleteStaffItem('flowerbeds', ${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-bold">刪除</button>
+        </div>
+      `).join("");
+    }
+
+    function addStaffItem(key) {
+      if (key === "teachers") {
+        const name = document.getElementById("add-tea-name").value.trim();
+        if (!name) return showToast("請輸入師長姓名", "warning");
+        DB.staff.teachers.push({ id: "T_" + Date.now(), name });
+        document.getElementById("add-tea-name").value = "";
+      } else if (key === "flowerbeds") {
+        const name = document.getElementById("add-fb-name").value.trim();
+        if (!name) return showToast("請輸入花圃師長姓名", "warning");
+        DB.staff.flowerbeds.push({ id: "FB_" + Date.now(), name });
+        document.getElementById("add-fb-name").value = "";
+      }
+      saveDB();
+      refreshHeaderAndHome();
+      renderStaffLists();
+      showToast("✅ 已新增至名單！", "success");
+    }
+
+    function moveStaffItem(key, idx, dir) {
+      const arr = DB.staff[key];
+      if (idx + dir < 0 || idx + dir >= arr.length) return;
+      const tmp = arr[idx];
+      arr[idx] = arr[idx + dir];
+      arr[idx + dir] = tmp;
+      saveDB();
+      refreshHeaderAndHome();
+      renderStaffLists();
+    }
+
+    function deleteStaffItem(key, idx) {
+      if (DB.staff[key].length <= 1) {
+        return showToast("至少需保留一位評分人員。", "warning");
+      }
+      if (!confirm("確定要刪除此位人員嗎？")) return;
+      DB.staff[key].splice(idx, 1);
+      saveDB();
+      refreshHeaderAndHome();
+      renderStaffLists();
+      showToast("已刪除名單項目。", "info");
+    }
+
+    // 48 班查詢密碼表
+    function switchPwTableGrade(g) {
+      SESSION.adminPwGrade = Number(g);
+      [1, 2, 3].forEach(idx => {
+        const btn = document.getElementById("pwt-g-" + idx);
+        btn.className = idx === SESSION.adminPwGrade
+          ? "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs"
+          : "px-3 py-1.5 rounded-lg text-slate-600";
+      });
+      renderAdminClassPasswordGrid();
+    }
+
+    function renderAdminClassPasswordGrid() {
+      const g = SESSION.adminPwGrade;
+      const grid = document.getElementById("admin-pw-grid");
+      let html = "";
+      for (let c = 1; c <= 16; c++) {
+        const cid = String(g * 100 + c);
+        const pw = DB.classPasswords[cid] || ("1" + cid);
+        html += `
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-1.5">
+            <span class="font-extrabold text-slate-800 text-xs-force">${cid}</span>
+            <input type="text" inputmode="numeric" value="${pw}"
+              onchange="DB.classPasswords['${cid}'] = this.value.trim(); saveDB(); showToast('已更新 ${cid} 班查詢密碼','success')"
+              class="w-20 text-center rounded-lg border border-slate-300 px-1.5 py-1 font-mono font-bold text-slate-900 bg-white text-sm-force" />
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
+    }
+
+    function resetClassPasswords() {
+      if (!confirm("確定要將全校 48 班查詢密碼重設為「1 + 班級」（1101～1316）嗎？")) return;
+      DB.classPasswords = buildInitialClassPasswords();
+      saveDB();
+      renderAdminClassPasswordGrid();
+      showToast("✅ 已重設全校 48 班密碼為 1+班級！", "success");
+    }
+
+    // 掃區分配表微調
+    function switchAreaMapGrade(g) {
+      SESSION.adminAreaMapGrade = Number(g);
+      [1, 2, 3, 0].forEach(idx => {
+        const btn = document.getElementById("amap-g-" + idx);
+        if (!btn) return;
+        btn.className = idx === SESSION.adminAreaMapGrade
+          ? "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs"
+          : "px-3 py-1.5 rounded-lg text-slate-600";
+      });
+      renderAdminAreaMapTable();
+    }
+
+    function updateClassAreaField(cid, field, val) {
+      if (!DB.areaMap[cid]) DB.areaMap[cid] = { publicArea: "", respArea: "", toiletArea: "" };
+      DB.areaMap[cid][field] = val.trim();
+      saveDB();
+      showToast(`已更新 ${cid} 班掃區設定`, "success");
+    }
+
+    function resetGradeRespAreas() {
+      const g = SESSION.adminAreaMapGrade;
+      const label = g === 0 ? "全校 48 班" : `${{1:"高一",2:"高二",3:"高三"}[g]}`;
+      if (!confirm(`確定要將【${label}】的「責任區」重設為預設精簡文字嗎？`)) return;
+      const grades = g === 0 ? [1, 2, 3] : [g];
+      grades.forEach(gr => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(gr * 100 + c);
+          if (DB.areaMap[cid]) {
+            DB.areaMap[cid].respArea = SECRET_BOOK_AREA_MAP[cid].respArea;
+          }
+        }
+      });
+      saveDB();
+      renderAdminAreaMapTable();
+      showToast(`✅ 已重設【${label}】責任區文字！`, "success");
+    }
+
+    function renderAdminAreaMapTable() {
+      const g = SESSION.adminAreaMapGrade;
+      const kw = (document.getElementById("amap-search")?.value || "").trim().toLowerCase();
+      const tbody = document.getElementById("admin-areamap-tbody");
+      const grades = g === 0 ? [1, 2, 3] : [g];
+      let html = "";
+
+      grades.forEach(gr => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(gr * 100 + c);
+          const obj = DB.areaMap[cid] || { publicArea: "", respArea: "", toiletArea: "" };
+          if (kw && !cid.includes(kw) &&
+              !obj.publicArea.toLowerCase().includes(kw) &&
+              !obj.respArea.toLowerCase().includes(kw) &&
+              !obj.toiletArea.toLowerCase().includes(kw)) {
+            continue;
+          }
+          html += `
+            <tr class="hover:bg-slate-50 align-top">
+              <td class="py-2.5 px-3 font-extrabold text-slate-900">${cid} 班</td>
+              <td class="py-2 px-2">
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'publicArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.publicArea}</textarea>
+              </td>
+              <td class="py-2 px-2">
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'respArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.respArea}</textarea>
+              </td>
+              <td class="py-2 px-2">
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'toiletArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.toiletArea}</textarea>
+              </td>
+            </tr>
+          `;
+        }
+      });
+
+      tbody.innerHTML = html || '<tr><td colspan="4" class="py-6 text-center text-slate-400">找不到符合關鍵字的班級或掃區。</td></tr>';
+    }
+
+    // =========================================================================
+    // 9. 一鍵載入模擬測試成績 / 清空成績
+    // =========================================================================
+    function loadDemoSampleData() {
+      const roundNum = Number(document.getElementById("rep-round-select").value);
+      const rData = { cadre: [], teacher: [], flowerbed: [], coop: [] };
+
+      [1, 2, 3].forEach(g => {
+        const targetG = getCadreTargetGrade(g);
+        for (let c = 1; c <= 16; c++) {
+          const scorerCid = String(g * 100 + c);
+          const area = getCadreAssignedArea(roundNum, c);
+          for (let tc = 1; tc <= 16; tc++) {
+            const targetCid = String(targetG * 100 + tc);
+            const randScore = 78 + Math.floor(Math.random() * 8);
+            rData.cadre.push({
+              id: `DEMO_C_${scorerCid}_${targetCid}`,
+              scorerClassId: scorerCid,
+              scorerClassNum: c,
+              scorerName: `股長${scorerCid}`,
+              targetClassId: targetCid,
+              area,
+              score: randScore,
+              remark: randScore <= 78 ? "角落仍有少許落葉紙屑" : "",
+              time: "10:05:00"
+            });
+          }
+        }
+      });
+
+      DB.staff.teachers.forEach((t, idx) => {
+        const g = (idx % 3) + 1;
+        const steps = [-1.5, -0.5, 0, 0, 0.5, 1.0, 1.5, 2.0, 2.5];
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          const sc = steps[(c * 3 + g) % steps.length];
+          rData.teacher.push({
+            id: `DEMO_T_${t.id}_${cid}`,
+            teacherId: t.id,
+            teacherName: t.name,
+            targetClassId: cid,
+            score: sc,
+            remark: sc < 0 ? "窗溝與洗手台需再加強擦拭" : (sc >= 1.5 ? "整體整潔表現優異" : ""),
+            time: "10:08:00"
+          });
+        }
+      });
+
+      DB.staff.flowerbeds.forEach((fb, fIdx) => {
+        const zone = fIdx === 0 ? "後走廊" : "前走廊";
+        [1, 2].forEach(g => {
+          for (let c = 1; c <= 16; c++) {
+            const cid = String(g * 100 + c);
+            const isNone = (c === 4 && fIdx > 0);
+            const sc = isNone ? "無" : (4 + ((c + fIdx * 2) % 6));
+            rData.flowerbed.push({
+              id: `DEMO_FB_${fb.id}_${zone}_${cid}`,
+              fbId: fb.id,
+              fbName: fb.name,
+              zone,
+              targetClassId: cid,
+              score: sc,
+              remark: sc === 4 ? "花圃內有雜草與枯葉" : "",
+              time: "10:09:00"
+            });
+          }
+        });
+      });
+
+      [1, 2, 3].forEach(g => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          const sc = (c === 7 && g === 1) ? -1 : 0;
+          rData.coop.push({
+            id: `DEMO_CP_${cid}`,
+            coopId: "COOP_SINGLE",
+            coopName: "合作社代表",
+            targetClassId: cid,
+            score: sc,
+            remark: sc === -1 ? "餐車未推回刷洗放整齊" : "",
+            time: "10:10:00"
+          });
+        }
+      });
+
+      DB.rounds[roundNum] = rData;
+      saveDB();
+      renderAdminSummaryReport();
+      showToast(`🧪 已載入【${getRoundLabel(roundNum)}】全校模擬測試成績！`, "success");
+    }
+
+    function clearAllRoundScores() {
+      const roundNum = Number(document.getElementById("rep-round-select").value);
+      if (!confirm(`確定要清空【${getRoundLabel(roundNum)}】的所有評分紀錄嗎？`)) return;
+      DB.rounds[roundNum] = { cadre: [], teacher: [], flowerbed: [], coop: [] };
+      saveDB();
+      renderAdminSummaryReport();
+      showToast(`🗑️ 已清空【${getRoundLabel(roundNum)}】成績！`, "info");
+    }
+  </script>
+</body>
+</html>

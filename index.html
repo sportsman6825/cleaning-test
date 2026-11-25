@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>國立嘉義女子高級中學｜大掃除比賽評分與查詢系統</title>
+  <title>國立嘉義女子高級中學｜大掃除比賽評分與查詢系統（體驗測試版）</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,8 +49,13 @@
       </button>
 
       <div class="flex items-center gap-2 shrink-0">
-        <span id="preview-mode-badge" class="hidden md:inline-flex px-2.5 py-1 rounded-full text-xs-force font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">前端預覽版（本機即時運算）</span>
-        <span id="current-user-badge" class="hidden px-3 py-1 rounded-full text-xs-force font-bold bg-slate-800 text-teal-300 border border-slate-700 max-w-[160px] md:max-w-xs truncate"></span>
+        <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs-force font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">
+          🧪 體驗測試版（免後台・本機即時運算）
+        </span>
+        <button type="button" onclick="resetEntireDemoData()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs-force font-bold transition" title="恢復初始示範資料">
+          🔄 重置示範資料
+        </button>
+        <span id="current-user-badge" class="hidden px-3 py-1 rounded-full text-xs-force font-bold bg-teal-900/80 text-teal-200 border border-teal-700 max-w-[160px] md:max-w-xs truncate"></span>
         <button type="button" id="btn-logout" onclick="goHomePage()" class="hidden px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs-force font-extrabold transition">登出</button>
       </div>
     </div>
@@ -87,7 +92,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-100 gap-1">
           <div>
             <h2 class="text-lg md:text-xl font-extrabold text-slate-900">請選擇您的登入身份</h2>
-            <p class="text-xs-force text-slate-500">點選下方入口進入對應大掃除評分或查詢頁面</p>
+            <p class="text-xs-force text-slate-500">點選下方入口進入對應大掃除評分或查詢頁面（測試版已內建模擬成績供即時體驗）</p>
           </div>
           <span class="text-xs-force text-slate-400">支援手機直式與電腦橫式自動滿版切換</span>
         </div>
@@ -167,7 +172,7 @@
         </div>
       </div>
 
-      <!-- 登入表單外框（點選任一入口後展開） -->
+      <!-- 登入表單外框 -->
       <div id="login-forms-wrapper" class="max-w-xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 hidden">
         <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
           <h2 id="login-form-title" class="text-lg font-extrabold text-slate-900">身份登入</h2>
@@ -229,7 +234,7 @@
         <!-- 3. 花圃評分登入 -->
         <form id="form-login-flowerbed" onsubmit="submitLoginFlowerbed(event)" class="space-y-4 hidden">
           <div class="bg-emerald-50 rounded-xl p-3.5 text-xs-force text-emerald-950 border border-emerald-200">
-            評分對象為<strong>一年級（101～116）</strong>與<strong>二年級（201～216）</strong>；基本分 5 分（0～10 分），若該班未分配花圃請選「無」。
+            評分對象為<strong>高一（101～116）</strong>與<strong>高二（201～216）</strong>；基本分 5 分（0～10 分），若該班未分配花圃請選「無」。
           </div>
           <div>
             <label class="block text-sm-force font-bold text-slate-700 mb-1">師長姓名 <span class="text-rose-500">*</span></label>
@@ -252,7 +257,7 @@
         <!-- 4. 合作社評分登入 -->
         <form id="form-login-coop" onsubmit="submitLoginCoop(event)" class="space-y-4 hidden">
           <div class="bg-orange-50 rounded-xl p-3.5 text-xs-force text-orange-950 border border-orange-200">
-            評分對象為全校三學年（101～316）團膳餐車：推回刷洗擦拭並整齊放整齊為 <strong>0 分</strong>，未清理放整齊者扣 <strong>-1 分</strong>。
+            評分對象為全校三學年（101～316）團膳餐車：推回刷洗擦拭並整齊放整齊為 <strong>0 分</strong>，未推回刷洗放整齊者扣 <strong>-1 分</strong>。
           </div>
           <div>
             <label class="block text-sm-force font-bold text-slate-700 mb-1">評分人員姓名 <span class="text-rose-500">*</span></label>
@@ -265,7 +270,7 @@
           <button type="submit" class="w-full py-3.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold shadow-md transition">進入合作社餐車評分</button>
         </form>
 
-        <!-- 5. 班級查詢登入 -->
+        <!-- 5. 班級查詢登入（保留預設查詢密碼提示） -->
         <form id="form-login-inquiry" onsubmit="submitLoginInquiry(event)" class="space-y-4 hidden">
           <div class="bg-amber-50 rounded-xl p-3.5 text-xs-force text-amber-950 border border-amber-200">
             預設查詢密碼為 <strong>1 + 班級</strong>（例如：101 班為 <strong>1101</strong>、201 班為 <strong>1201</strong>、301 班為 <strong>1301</strong>）。
@@ -294,7 +299,7 @@
         <!-- 6. 衛生組後台登入 -->
         <form id="form-login-admin" onsubmit="submitLoginAdmin(event)" class="space-y-4 hidden">
           <div class="bg-slate-100 rounded-xl p-3.5 text-xs-force text-slate-700 border border-slate-200">
-            限學務處衛生組管理人員使用，請輸入管理密碼進入後台。
+            限學務處衛生組管理人員使用，請輸入管理密碼進入體驗。
           </div>
           <div>
             <label class="block text-sm-force font-bold text-slate-700 mb-1">後台管理密碼 <span class="text-rose-500">*</span></label>
@@ -334,7 +339,7 @@
         <div class="w-full max-w-[1600px] mx-auto flex items-center justify-between gap-3">
           <div>
             <p id="scoring-footer-status" class="text-sm-force font-extrabold text-slate-900">本頁共 16 班</p>
-            <p class="text-xs-force text-slate-500">確認無誤後請點擊右側按鈕一鍵送出（送出後仍可重新修改覆蓋）</p>
+            <p class="text-xs-force text-slate-500">確認無誤後請點擊右側按鈕一鍵送出（本機即時寫入並更新統計總表）</p>
           </div>
           <button type="button" onclick="submitScoringForm()" class="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 active:scale-[0.98] text-white font-extrabold text-sm-force shadow-lg transition shrink-0">
             🚀 一鍵送出全部評分
@@ -399,7 +404,7 @@
 
     <!-- ==================== 四、衛生組後台管理視圖 ==================== -->
     <section id="view-admin" class="hidden space-y-4">
-      <!-- ★ 後台頂部常駐控制列：場次切換開關與儲存按鈕 -->
+      <!-- 後台頂部常駐控制列：場次切換開關與儲存按鈕 -->
       <div class="bg-slate-900 text-white rounded-2xl p-4 md:p-5 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <span class="px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs-force md:text-sm-force shrink-0">全域場次控制</span>
@@ -446,7 +451,7 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="loadDemoSampleData()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs-force font-extrabold">🧪 載入模擬成績測試</button>
+            <button type="button" onclick="loadDemoSampleData()" class="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs-force font-extrabold">🧪 重新產生隨機示範成績</button>
             <button type="button" onclick="clearAllRoundScores()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs-force font-extrabold">🗑️ 清空本場次成績</button>
             <button type="button" onclick="exportSummaryExcel()" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs-force font-extrabold shadow-sm">📥 匯出 .xlsx 總成績報表</button>
           </div>
@@ -524,7 +529,7 @@
 
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h3 class="text-base font-extrabold text-slate-900">🗂️ 已送出成績明細檢視與修改</h3>
+            <h3 class="text-base font-extrabold text-slate-900">🗂️ 已送出成績明細檢視與刪除</h3>
             <div class="flex flex-wrap items-center gap-2">
               <select id="log-round-filter" onchange="renderAdminLogsTable()" class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force font-bold bg-white">
                 <option value="1">第一次大掃除</option>
@@ -564,7 +569,6 @@
 
       <!-- 4.4 名單排序、密碼與掃區設定 -->
       <div id="admin-pane-settings" class="hidden space-y-5">
-        <!-- A. 學期資訊與各類通行碼設定 -->
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
           <h3 class="text-base font-extrabold text-slate-900">🎛️ A. 學期資訊與各類通行密碼設定</h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -613,9 +617,8 @@
           <button type="button" onclick="saveGeneralSettings()" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm-force font-extrabold shadow-xs">💾 儲存基本與通行碼設定</button>
         </div>
 
-        <!-- B. 師長與花圃評分師長名單管理（新增 / 刪除 / ▲▼ 排序） -->
+        <!-- B. 師長與花圃評分師長名單管理 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- B1. 班級評分師長名單 -->
           <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
             <h3 class="text-base font-extrabold text-indigo-950">👩‍🏫 B1. 師長評分名單（可新增／刪除／調整順序）</h3>
             <p class="text-xs-force text-slate-500">師長登入時可自行於下拉選單選擇高一、高二或高三掃區。</p>
@@ -626,7 +629,6 @@
             <div id="list-teachers" class="space-y-2 pt-1"></div>
           </div>
 
-          <!-- B2. 花圃評分師長名單 -->
           <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 space-y-3">
             <h3 class="text-base font-extrabold text-emerald-950">🌺 B2. 花圃評分師長名單（預計 3 位，可新增／刪除／排序）</h3>
             <p class="text-xs-force text-slate-500">師長登入時可自行於下拉選單選擇「前走廊」或「後走廊」。</p>
@@ -657,12 +659,12 @@
           <div id="admin-pw-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5"></div>
         </div>
 
-        <!-- D. 掃區分配表微調（已整併 115-1 衛生秘笈全校 48 班資料） -->
+        <!-- D. 掃區分配表微調 -->
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div>
               <h3 class="text-base font-extrabold text-slate-900">🧹 D. 全校 48 班掃區分配表微調（自動帶入幹部與師長評分頁）</h3>
-              <p class="text-xs-force text-slate-500">已完整匯入《115學年度第一學期衛生秘笈》全校 48 班公共區、責任區與班廁分配，可隨時在此微調修改。</p>
+              <p class="text-xs-force text-slate-500">已完整匯入《115學年度第一學期衛生秘笈》全校 48 班掃區分配，修改後即時同步至前台評分頁。</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <input type="text" id="amap-search" oninput="renderAdminAreaMapTable()" placeholder="搜尋班級或掃區關鍵字..." class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs-force bg-slate-50 focus:bg-white outline-none" />
@@ -696,280 +698,75 @@
 
   <script>
     // =========================================================================
-    // 1. 系統設定與《115學年度第一學期衛生秘笈》全校 48 班掃區資料
+    // 1. 純前端體驗測試版資料引擎（無需後台，本機即時儲存與運算）
     // =========================================================================
-    const API_URL = ""; // 待確認網頁版型無誤後，貼入 Google Apps Script 網址即自動連線雲端
-
+    const STORAGE_KEY = "CYGSH_BIG_CLEAN_STANDALONE_DEMO_V1";
     const DEFAULT_RESP_BASE = "教室走廊地面、門窗、桌椅掃具擺置、垃圾分類、講台黑板、洗手台及飲水機清潔";
 
-    // 整併自《115學年度第一學期衛生秘笈》第 9~14 頁之全校 48 班掃區分配表
     const SECRET_BOOK_AREA_MAP = {
-      // ==================== 高一（101 ~ 116） ====================
-      "101": {
-        publicArea: "國文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；晤談室(國文與英文辦公室間)辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側四樓女廁*3"
-      },
-      "102": {
-        publicArea: "行政大樓一樓前庭(從教務處與教官室中間所夾之中廊往校門口方向延伸至階梯，含無障礙斜坡、四周樓梯、圓弧凹槽、空地)；行政大樓與教學大樓之間一樓的中走廊",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側三樓女廁*5"
-      },
-      "103": {
-        publicArea: "教學大樓中庭的兩座圓弧樓梯、販賣機旁梯下空間；教學大樓一樓中庭(從連接行政大樓之中走廊區到水池前之間有鋪磁磚的整個空地、含藝文中心前空地)；教學大樓西側四樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 116 之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側四樓女廁*5"
-      },
-      "104": {
-        publicArea: "英文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭；教學大樓東側三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 101 之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側三樓女廁*5"
-      },
-      "105": {
-        publicArea: "圖書館一樓：正門前台階和殘障坡道、走廊、紅磚道、辦公室、座位區桌椅擦拭、報紙區、書庫區及閱覽區沙發、櫃子擦拭、倒一般垃圾(每天)、內部樓梯間(含梯下空間到廁所外地板)、寧園蕙心亭[圖書館一樓南側]打掃(含掃地、擦桌子椅子)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側三樓女廁*4;無障礙*1"
-      },
-      "106": {
-        publicArea: "教學大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 216 之間的走道)；圖書館內部一樓升二樓、二樓升三樓、三樓升四樓樓梯(含二樓樓梯轉角平台區地板掃地拖地、三樓櫃子內外清理、扶手用抹布擦拭)、清理蜘蛛網",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側三樓女廁*6"
-      },
-      "107": {
-        publicArea: "校長室(含秘書室)&會議室(校長室旁)外走廊、洗手台，以及掃地拖地、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網；行政大樓二樓校長室外面「誠仁新毅」立牌處空地到連接教學大樓的中走廊，二樓 T 型走廊",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側三樓女廁*6"
-      },
-      "108": {
-        publicArea: "教學大樓東側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 108 之間的走道)；教學大樓東側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側四樓女廁*4"
-      },
-      "109": {
-        publicArea: "教學大樓東側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓二樓輔導室(團體活動室)內部掃地拖地、外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側四樓女廁*5"
-      },
-      "110": {
-        publicArea: "教學大樓五樓特殊專科教室外整條走廊(至樓梯處)；教學大樓中央三樓升四樓、四樓升五樓樓梯(含三樓、四樓及五樓樓梯到電梯前面周圍整個平台空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】；【115-2 新增】教學大樓電梯內部地板清掃及扶手面板擦拭",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側四樓女廁*5"
-      },
-      "111": {
-        publicArea: "社會科辦公室外走廊(至東側廁所前)、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側四樓女廁*3"
-      },
-      "112": {
-        publicArea: "教學大樓西側五樓(南區輔導諮商中心)外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭，一般/回收垃圾清理；教學大樓西側五樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側四樓女廁*5;教學大樓西側五樓男廁*2(全)"
-      },
-      "113": {
-        publicArea: "教學大樓西側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓東側三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側三樓女廁*5;男廁*1(全)"
-      },
-      "114": {
-        publicArea: "行政大樓西側二樓(自然科~西側廁所前方)外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側五樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和交通安全教室之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側五樓女廁*5"
-      },
-      "115": {
-        publicArea: "輔導室辦公室外走廊(輔導室門外到廁所之間西側走廊)窗戶、窗台、窗下空隙瓷磚、書架整理擦拭、清理蜘蛛網、一般/回收垃圾清理",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側五樓女廁*5;無障礙*1"
-      },
-      "116": {
-        publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館三樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館東側樓梯清掃與扶手擦拭(B1~4F)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "藝能館三樓男/女/無障礙廁所"
-      },
-
-      // ==================== 高二（201 ~ 216） ====================
-      "201": {
-        publicArea: "教學大樓與中正館之間停車場區域掃地；教學大樓東側外停車場進入大樓之間的台階、殘障坡道、台階到教室與東側樓梯之間的空地掃地拖地、周圍草皮區撿落葉、垃圾；行政大樓東側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "行政大樓東側二樓女廁*3;男廁*1;無障礙廁所*1(全)"
-      },
-      "202": {
-        publicArea: "育樂中心游泳池室內更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；育樂中心教職員更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；圖書館西側(靠近操場)一樓門前平台、電梯、樓梯、梯下空間、殘障坡道及一樓升二樓樓梯；圖書館三樓中走廊掃地拖地；行政大樓東側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "行政大樓東側一樓女廁*3;男廁*1;無障礙廁所*1(全)"
-      },
-      "203": {
-        publicArea: "圖書館二樓自修室(包含裡面三間小教室、掃地拖地、擦拭桌面)；圖書館一樓廁所全部；圖書館二樓廁所全部【含倒垃圾、便盆清潔】；教學大樓東側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 201 之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側一樓女廁*6"
-      },
-      "204": {
-        publicArea: "游泳池室外更衣室及北側走道(地面、垃圾清理)、體育組辦公室外一樓男廁 1 間；體育組辦公室與游泳池間走道及游泳池置物櫃擦拭及物品清空；教學大樓西側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 207 教室之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側一樓女廁*4;教學大樓西側一樓女廁*2;教學大樓西側一樓無障礙*1"
-      },
-      "205": {
-        publicArea: "圖書館四樓寧翔齋(掃地拖地、書櫃及桌面擦拭)；圖書館三樓廁所全部；圖書館四樓廁所全部；【含倒垃圾、便盆清潔】",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側一樓女廁*7"
-      },
-      "206": {
-        publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓各教室外窗戶窗台擦拭、走廊掃地拖地、欄杆鞋櫃清理、電梯(地面掃地拖地、內部扶手、面板擦拭)；行政大樓西側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "行政大樓西側二樓女廁*3;男廁*1;無障礙*1"
-      },
-      "207": {
-        publicArea: "新科館 1F 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；育樂中心游泳池室內更衣室 5 間地面、垃圾清理；行政大樓西側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側一樓女廁*3;男廁*1;無障礙*1;教學大樓西側一樓女廁*3"
-      },
-      "208": {
-        publicArea: "體育組辦公室內一樓升二樓樓梯；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；圖書館西側(靠近操場)外部二樓升三樓、三樓升四樓樓梯，及二樓、三樓、四樓平台(含電梯周圍、陽台排水孔、櫃子內外清理、樓梯扶手及飲水機台擦拭)；教學大樓東側一樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側一樓女廁*5;男廁*1(全)"
-      },
-      "209": {
-        publicArea: "育樂中心游泳池東西側走道、沖水區、看台、看台下方區域；育樂中心一樓女廁(兩間蹲式)及無障礙廁所；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；司令台東側看台、階梯及看台旁空地走道清掃",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側二樓女廁*6"
-      },
-      "210": {
-        publicArea: "教學大樓東側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 208 教室之間的走道)；健康中心診療室、辦公室、哺乳室內全部掃地拖地、外部 L 型走廊(西側及南側)清掃、一般垃圾清理；健康中心四周圍草皮區及兩條無障礙斜坡清掃與落葉、垃圾整理；司令台清掃、撿拾垃圾、桌子擦拭",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側二樓女廁*4"
-      },
-      "211": {
-        publicArea: "新科館東側樓梯清掃與扶手擦拭(B1~5F)；司令台西側看台、階梯及看台旁空地走道清掃；教學大樓中央一樓升二樓、二樓升三樓樓梯(含一樓及二樓樓梯到電梯前面周圍整個平台空間及一樓的梯下空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓東側二樓女廁*7"
-      },
-      "212": {
-        publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；新科館西側樓梯清掃與扶手擦拭(B1~5F)；教學大樓西側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 214 之間的走道)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側二樓女廁*7"
-      },
-      "213": {
-        publicArea: "新科館 B1 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；新科館西側無障礙坡道清掃；中正館四周(東側側門廊道階梯殘障坡道廣場、西側外階梯磁磚平台公用電話、南側外階梯至腳踏車棚交界處)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側一樓女廁*4;教學大樓西側二樓女廁*2;無障礙*1"
-      },
-      "214": {
-        publicArea: "育樂中心東側一樓升二樓、二樓升三樓樓梯全(含一樓、二樓、三樓梯前平台)；育樂中心三樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；育樂中心三樓各教室外窗戶、窗台擦拭、走廊掃地拖地、欄杆擦拭、鞋櫃清理；美育大樓(舊科館)一樓+二樓，走廊清掃與樓梯清掃及擦拭",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側二樓女廁*7"
-      },
-      "215": {
-        publicArea: "教學大樓三樓空中花園(打掃、收拾垃圾)；教學大樓三樓中央電梯外陽台清掃；美育大樓(舊科館)一樓 男/女/無障礙廁所清潔(含馬桶、地板、洗手台、倒垃圾)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "教學大樓西側四樓女廁*4"
-      },
-      "216": {
-        publicArea: "特教組安排舞蹈教室 1 間；藝能館三樓走廊清掃、排水溝渠清掃、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館西側樓梯清掃與扶手擦拭(B1~4F)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "藝能館四樓男廁/女廁/無障礙廁所"
-      },
-
-      // ==================== 高三（301 ~ 316） ====================
-      "301": {
-        publicArea: "行政大樓東側五樓女廁&男廁公共區(大地板、掃地工具擺放、鏡子、洗手台)；行政大樓東側電梯內部地板清掃及扶手面板擦拭",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）",
-        toiletArea: "行政大樓東側五樓女廁*3;男廁*1;無障礙廁所*1"
-      },
-      "302": {
-        publicArea: "行政大樓東側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；進德堂內部掃地拖地、倒垃圾與資源回收；進德堂外部入門處台階、殘障坡道、南北兩側通道之垃圾與落葉清理",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓東側四樓女廁*4"
-      },
-      "303": {
-        publicArea: "行政大樓東側四樓社會科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓五樓東側走廊至廁所前方(含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台，倒一般垃圾與回收垃圾(中央樓梯旁)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：社會科專科教室前洗手台、教室前洗手台與飲水機台）",
-        toiletArea: "行政大樓東側四樓女廁*3"
-      },
-      "304": {
-        publicArea: "行政大樓中央(中廊旁)地下一樓至三樓的兩座樓梯(含各樓層樓梯前空間、清理蜘蛛網)；行政大樓東側四樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓東側四樓女廁*3"
-      },
-      "305": {
-        publicArea: "行政大樓中央升四樓、升五樓樓梯(含三樓及四樓樓梯前的空地及梯下空間、清理蜘蛛網)；總務處一樓整個走廊(含一樓東南西北三處入口階梯)、無障礙斜坡、掃地拖地與清理蜘蛛網；總務處一樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓西側四樓女廁*4;總務處一樓女廁*2;一樓男廁*1"
-      },
-      "306": {
-        publicArea: "行政大樓西側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；行政大樓西側電梯內部地板清掃及扶手面板擦拭；行政大樓五樓西側走廊至廁所前方(不含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓西側四樓女廁*3"
-      },
-      "307": {
-        publicArea: "行政大樓西側一樓(油印室~西側廁所)外走廊、水泥走道、窗台、窗下空隙瓷磚、清理蜘蛛網；行政大樓西側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)；【115-2 新增】教務處與總務中間通道掃地，用柱子區隔 305 與 307 的掃區",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓西側四樓女廁*3"
-      },
-      "308": {
-        publicArea: "行政大樓西側四樓國文科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓西側五樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：國文科專科教室前洗手台、教室前洗手台與飲水機台）",
-        toiletArea: "行政大樓西側五樓女廁*3;男廁*1;無障礙*1"
-      },
-      "309": {
-        publicArea: "行政大樓東側一樓(國防雙語教室~東側廁所)外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓三樓東側走廊延伸至廁所前方(含餐車放置區)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓東側三樓女廁*4"
-      },
-      "310": {
-        publicArea: "行政大樓西側三樓數學專科教室、teal 教室到廁所前方之外部走廊(兩者皆包含地板、餐車放置區、窗戶、窗台、窗台下空隙磁磚、座椅平台清掃擦拭)；明德樓一樓走廊(含接柏油路樓梯)、無障礙坡道",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台、teal 教室前洗手台）",
-        toiletArea: "行政大樓東側三樓女廁*3"
-      },
-      "311": {
-        publicArea: "明德樓、總務處、藝能館之間的車道、機車車棚；行政大樓東側三樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)；總務處三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、外走廊)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓東側三樓女廁*3;總務處三樓女廁*2"
-      },
-      "312": {
-        publicArea: "總務處一到三樓南側及北側兩座樓梯(三樓含簡報室外面整個地板) 掃地拖地與清理蜘蛛網；數學科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；總務處三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）",
-        toiletArea: "行政大樓西側三樓女廁*3;總務處三樓男廁*2"
-      },
-      "313": {
-        publicArea: "行政大樓東側一樓(教室官~學務處)外走廊、水泥走道、無障礙坡道、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網",
-        respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）",
-        toiletArea: "行政大樓西側三樓女廁*4"
-      },
-      "314": {
-        publicArea: "行政大樓西側一樓「教務主任辦公室~教務處(不含油印室)」外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：數學科專科教室前洗手台與飲水機台）",
-        toiletArea: "行政大樓西側三樓女廁*3"
-      },
-      "315": {
-        publicArea: "總務處二樓整個走廊(延伸到兩側樓梯處)掃地拖地、清理蜘蛛網；總務處二樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)",
-        respArea: DEFAULT_RESP_BASE + "（輪值：316 教室前洗手台）",
-        toiletArea: "總務處二樓女廁*2;二樓男廁*2"
-      },
-      "316": {
-        publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓姿體調整教室 1 間；音樂教室 1 間；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)",
-        respArea: DEFAULT_RESP_BASE,
-        toiletArea: "藝能館二樓男/女/無障礙廁所"
-      }
+      "101": { publicArea: "國文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；晤談室(國文與英文辦公室間)辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側四樓女廁*3" },
+      "102": { publicArea: "行政大樓一樓前庭(從教務處與教官室中間所夾之中廊往校門口方向延伸至階梯，含無障礙斜坡、四周樓梯、圓弧凹槽、空地)；行政大樓與教學大樓之間一樓的中走廊", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側三樓女廁*5" },
+      "103": { publicArea: "教學大樓中庭的兩座圓弧樓梯、販賣機旁梯下空間；教學大樓一樓中庭(從連接行政大樓之中走廊區到水池前之間有鋪磁磚的整個空地、含藝文中心前空地)；教學大樓西側四樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 116 之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側四樓女廁*5" },
+      "104": { publicArea: "英文科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭；教學大樓東側三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、廁所和 101 之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側三樓女廁*5" },
+      "105": { publicArea: "圖書館一樓：正門前台階和殘障坡道、走廊、紅磚道、辦公室、座位區桌椅擦拭、報紙區、書庫區及閱覽區沙發、櫃子擦拭、倒一般垃圾(每天)、內部樓梯間(含梯下空間到廁所外地板)、寧園蕙心亭[圖書館一樓南側]打掃(含掃地、擦桌子椅子)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側三樓女廁*4;無障礙*1" },
+      "106": { publicArea: "教學大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 216 之間的走道)；圖書館內部一樓升二樓、二樓升三樓、三樓升四樓樓梯(含二樓樓梯轉角平台區地板掃地拖地、三樓櫃子內外清理、扶手用抹布擦拭)、清理蜘蛛網", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側三樓女廁*6" },
+      "107": { publicArea: "校長室(含秘書室)&會議室(校長室旁)外走廊、洗手台，以及掃地拖地、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網；行政大樓二樓校長室外面「誠仁新毅」立牌處空地到連接教學大樓的中走廊，二樓 T 型走廊", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側三樓女廁*6" },
+      "108": { publicArea: "教學大樓東側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 108 之間的走道)；教學大樓東側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側四樓女廁*4" },
+      "109": { publicArea: "教學大樓東側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓二樓輔導室(團體活動室)內部掃地拖地、外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側四樓女廁*5" },
+      "110": { publicArea: "教學大樓五樓特殊專科教室外整條走廊(至樓梯處)；教學大樓中央三樓升四樓、四樓升五樓樓梯(含三樓、四樓及五樓樓梯到電梯前面周圍整個平台空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】；【115-2 新增】教學大樓電梯內部地板清掃及扶手面板擦拭", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側四樓女廁*5" },
+      "111": { publicArea: "社會科辦公室外走廊(至東側廁所前)、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側三樓升四樓、四樓升五樓樓梯(含四樓、五樓樓梯到廁所外整個平台空間)掃地拖地、清理蜘蛛網", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側四樓女廁*3" },
+      "112": { publicArea: "教學大樓西側五樓(南區輔導諮商中心)外走廊、窗戶、窗台、窗下空隙瓷磚、書架整理擦拭，一般/回收垃圾清理；教學大樓西側五樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側四樓女廁*5;教學大樓西側五樓男廁*2(全)" },
+      "113": { publicArea: "教學大樓西側一樓升二樓、二樓升三樓樓梯(含二樓、三樓到廁所外整個平台空間)掃地拖地、清理蜘蛛網；教學大樓東側三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側三樓女廁*5;男廁*1(全)" },
+      "114": { publicArea: "行政大樓西側二樓(自然科~西側廁所前方)外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；教學大樓西側五樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和交通安全教室之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側五樓女廁*5" },
+      "115": { publicArea: "輔導室辦公室外走廊(輔導室門外到廁所之間西側走廊)窗戶、窗台、窗下空隙瓷磚、書架整理擦拭、清理蜘蛛網、一般/回收垃圾清理", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側五樓女廁*5;無障礙*1" },
+      "116": { publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館三樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館東側樓梯清掃與扶手擦拭(B1~4F)", respArea: DEFAULT_RESP_BASE, toiletArea: "藝能館三樓男/女/無障礙廁所" },
+      "201": { publicArea: "教學大樓與中正館之間停車場區域掃地；教學大樓東側外停車場進入大樓之間的台階、殘障坡道、台階到教室與東側樓梯之間的空地掃地拖地、周圍草皮區撿落葉、垃圾；行政大樓東側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE, toiletArea: "行政大樓東側二樓女廁*3;男廁*1;無障礙廁所*1(全)" },
+      "202": { publicArea: "育樂中心游泳池室內更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；育樂中心教職員更衣室公共區(走道、洗手台、檯面下、鏡子擦拭)；圖書館西側(靠近操場)一樓門前平台、電梯、樓梯、梯下空間、殘障坡道及一樓升二樓樓梯；圖書館三樓中走廊掃地拖地；行政大樓東側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE, toiletArea: "行政大樓東側一樓女廁*3;男廁*1;無障礙廁所*1(全)" },
+      "203": { publicArea: "圖書館二樓自修室(包含裡面三間小教室、掃地拖地、擦拭桌面)；圖書館一樓廁所全部；圖書館二樓廁所全部【含倒垃圾、便盆清潔】；教學大樓東側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 201 之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側一樓女廁*6" },
+      "204": { publicArea: "游泳池室外更衣室及北側走道(地面、垃圾清理)、體育組辦公室外一樓男廁 1 間；體育組辦公室與游泳池間走道及游泳池置物櫃擦拭及物品清空；教學大樓西側一樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 207 教室之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側一樓女廁*4;教學大樓西側一樓女廁*2;教學大樓西側一樓無障礙*1" },
+      "205": { publicArea: "圖書館四樓寧翔齋(掃地拖地、書櫃及桌面擦拭)；圖書館三樓廁所全部；圖書館四樓廁所全部；【含倒垃圾、便盆清潔】", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側一樓女廁*7" },
+      "206": { publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓各教室外窗戶窗台擦拭、走廊掃地拖地、欄杆鞋櫃清理、電梯(地面掃地拖地、內部扶手、面板擦拭)；行政大樓西側二樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE, toiletArea: "行政大樓西側二樓女廁*3;男廁*1;無障礙*1" },
+      "207": { publicArea: "新科館 1F 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；育樂中心游泳池室內更衣室 5 間地面、垃圾清理；行政大樓西側一樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側一樓女廁*3;男廁*1;無障礙*1;教學大樓西側一樓女廁*3" },
+      "208": { publicArea: "體育組辦公室內一樓升二樓樓梯；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；圖書館西側(靠近操場)外部二樓升三樓、三樓升四樓樓梯，及二樓、三樓、四樓平台(含電梯周圍、陽台排水孔、櫃子內外清理、樓梯扶手及飲水機台擦拭)；教學大樓東側一樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、瓷磚)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側一樓女廁*5;男廁*1(全)" },
+      "209": { publicArea: "育樂中心游泳池東西側走道、沖水區、看台、看台下方區域；育樂中心一樓女廁(兩間蹲式)及無障礙廁所；育樂中心游泳池室內更衣室 4 間地面、垃圾清理；司令台東側看台、階梯及看台旁空地走道清掃", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側二樓女廁*6" },
+      "210": { publicArea: "教學大樓東側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 208 教室之間的走道)；健康中心診療室、辦公室、哺乳室內全部掃地拖地、外部 L 型走廊(西側及南側)清掃、一般垃圾清理；健康中心四周圍草皮區及兩條無障礙斜坡清掃與落葉、垃圾整理；司令台清掃、撿拾垃圾、桌子擦拭", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側二樓女廁*4" },
+      "211": { publicArea: "新科館東側樓梯清掃與扶手擦拭(B1~5F)；司令台西側看台、階梯及看台旁空地走道清掃；教學大樓中央一樓升二樓、二樓升三樓樓梯(含一樓及二樓樓梯到電梯前面周圍整個平台空間及一樓的梯下空間)掃地拖地；【以柱子來區別班級的責任區(外走廊)與班級的公共區(電梯周圍平台空間)】", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓東側二樓女廁*7" },
+      "212": { publicArea: "育樂中心游泳池室內更衣室 4 間地面、垃圾清理；育樂中心二樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；新科館西側樓梯清掃與扶手擦拭(B1~5F)；教學大樓西側二樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台、廁所和 214 之間的走道)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側二樓女廁*7" },
+      "213": { publicArea: "新科館 B1 外走廊、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；新科館西側無障礙坡道清掃；中正館四周(東側側門廊道階梯殘障坡道廣場、西側外階梯磁磚平台公用電話、南側外階梯至腳踏車棚交界處)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側一樓女廁*4;教學大樓西側二樓女廁*2;無障礙*1" },
+      "214": { publicArea: "育樂中心東側一樓升二樓、二樓升三樓樓梯全(含一樓、二樓、三樓梯前平台)；育樂中心三樓女廁全(有兩間蹲式、一間淋浴間及鏡子、洗手台、掃具擺放)及無障礙廁所；育樂中心三樓各教室外窗戶、窗台擦拭、走廊掃地拖地、欄杆擦拭、鞋櫃清理；美育大樓(舊科館)一樓+二樓，走廊清掃與樓梯清掃及擦拭", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側二樓女廁*7" },
+      "215": { publicArea: "教學大樓三樓空中花園(打掃、收拾垃圾)；教學大樓三樓中央電梯外陽台清掃；美育大樓(舊科館)一樓 男/女/無障礙廁所清潔(含馬桶、地板、洗手台、倒垃圾)", respArea: DEFAULT_RESP_BASE, toiletArea: "教學大樓西側四樓女廁*4" },
+      "216": { publicArea: "特教組安排舞蹈教室 1 間；藝能館三樓走廊清掃、排水溝渠清掃、男/女/無障礙廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館西側樓梯清掃與扶手擦拭(B1~4F)", respArea: DEFAULT_RESP_BASE, toiletArea: "藝能館四樓男廁/女廁/無障礙廁所" },
+      "301": { publicArea: "行政大樓東側五樓女廁&男廁公共區(大地板、掃地工具擺放、鏡子、洗手台)；行政大樓東側電梯內部地板清掃及扶手面板擦拭", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）", toiletArea: "行政大樓東側五樓女廁*3;男廁*1;無障礙廁所*1" },
+      "302": { publicArea: "行政大樓東側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；進德堂內部掃地拖地、倒垃圾與資源回收；進德堂外部入門處台階、殘障坡道、南北兩側通道之垃圾與落葉清理", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓東側四樓女廁*4" },
+      "303": { publicArea: "行政大樓東側四樓社會科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓五樓東側走廊至廁所前方(含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台，倒一般垃圾與回收垃圾(中央樓梯旁)", respArea: DEFAULT_RESP_BASE + "（輪值：社會科專科教室前洗手台、教室前洗手台與飲水機台）", toiletArea: "行政大樓東側四樓女廁*3" },
+      "304": { publicArea: "行政大樓中央(中廊旁)地下一樓至三樓的兩座樓梯(含各樓層樓梯前空間、清理蜘蛛網)；行政大樓東側四樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓東側四樓女廁*3" },
+      "305": { publicArea: "行政大樓中央升四樓、升五樓樓梯(含三樓及四樓樓梯前的空地及梯下空間、清理蜘蛛網)；總務處一樓整個走廊(含一樓東南西北三處入口階梯)、無障礙斜坡、掃地拖地與清理蜘蛛網；總務處一樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓西側四樓女廁*4;總務處一樓女廁*2;一樓男廁*1" },
+      "306": { publicArea: "行政大樓西側地下一樓至五樓樓梯全部(含每層樓電梯前的空地、清理蜘蛛網)；行政大樓西側電梯內部地板清掃及扶手面板擦拭；行政大樓五樓西側走廊至廁所前方(不含中央樓梯前整塊空地)、走廊平台、洗手台、飲水機台", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓西側四樓女廁*3" },
+      "307": { publicArea: "行政大樓西側一樓(油印室~西側廁所)外走廊、水泥走道、窗台、窗下空隙瓷磚、清理蜘蛛網；行政大樓西側四樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)；【115-2 新增】教務處與總務中間通道掃地，用柱子區隔 305 與 307 的掃區", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓西側四樓女廁*3" },
+      "308": { publicArea: "行政大樓西側四樓國文科專科教室到廁所前方之外部走廊(含地板、餐車放置區、洗手台、窗戶、窗台、窗台下空隙瓷磚、座椅平台清掃擦拭)；行政大樓西側五樓女廁&男廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE + "（輪值：國文科專科教室前洗手台、教室前洗手台與飲水機台）", toiletArea: "行政大樓西側五樓女廁*3;男廁*1;無障礙*1" },
+      "309": { publicArea: "行政大樓東側一樓(國防雙語教室~東側廁所)外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓三樓東側走廊延伸至廁所前方(含餐車放置區)", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓東側三樓女廁*4" },
+      "310": { publicArea: "行政大樓西側三樓數學專科教室、teal 教室到廁所前方之外部走廊(兩者皆包含地板、餐車放置區、窗戶、窗台、窗台下空隙磁磚、座椅平台清掃擦拭)；明德樓一樓走廊(含接柏油路樓梯)、無障礙坡道", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台、teal 教室前洗手台）", toiletArea: "行政大樓東側三樓女廁*3" },
+      "311": { publicArea: "明德樓、總務處、藝能館之間的車道、機車車棚；行政大樓東側三樓女廁公共區(地板、掃地工具擺放、工具間、鏡子、洗手台)；總務處三樓女廁公共區(大地板、掃地工具擺放、鏡子、洗手台、外走廊)", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓東側三樓女廁*3;總務處三樓女廁*2" },
+      "312": { publicArea: "總務處一到三樓南側及北側兩座樓梯(三樓含簡報室外面整個地板) 掃地拖地與清理蜘蛛網；數學科辦公室外走廊、洗手台、窗戶、窗台、窗下空隙瓷磚、書架、座椅平台清掃擦拭、清理蜘蛛網；總務處三樓男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台與飲水機台）", toiletArea: "行政大樓西側三樓女廁*3;總務處三樓男廁*2" },
+      "313": { publicArea: "行政大樓東側一樓(教室官~學務處)外走廊、水泥走道、無障礙坡道、窗戶、窗台、窗下空隙瓷磚、書架擦拭、清理蜘蛛網", respArea: DEFAULT_RESP_BASE + "（輪值：教室前洗手台）", toiletArea: "行政大樓西側三樓女廁*4" },
+      "314": { publicArea: "行政大樓西側一樓「教務主任辦公室~教務處(不含油印室)」外走廊、水泥走道、窗戶、窗台、窗下空隙瓷磚、書架清掃擦拭、清理蜘蛛網；行政大樓西側三樓女廁公共區(大地板、掃地工具擺放、工具間、鏡子、洗手台)", respArea: DEFAULT_RESP_BASE + "（輪值：數學科專科教室前洗手台與飲水機台）", toiletArea: "行政大樓西側三樓女廁*3" },
+      "315": { publicArea: "總務處二樓整個走廊(延伸到兩側樓梯處)掃地拖地、清理蜘蛛網；總務處二樓女廁&男廁公共區(地板、掃地工具擺放、鏡子、洗手台、外走廊)", respArea: DEFAULT_RESP_BASE + "（輪值：316 教室前洗手台）", toiletArea: "總務處二樓女廁*2;二樓男廁*2" },
+      "316": { publicArea: "特教組安排舞蹈教室 1 間；藝能館二樓姿體調整教室 1 間；音樂教室 1 間；藝能館四樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)；藝能館二樓走廊清掃、排水溝渠清掃、廁所清掃(含馬桶、地板、洗手台、倒垃圾)", respArea: DEFAULT_RESP_BASE, toiletArea: "藝能館二樓男/女/無障礙廁所" }
     };
-
-    function buildInitialAreaMap() {
-      return JSON.parse(JSON.stringify(SECRET_BOOK_AREA_MAP));
-    }
 
     function buildInitialClassPasswords() {
       const map = {};
       [1, 2, 3].forEach(g => {
         for (let c = 1; c <= 16; c++) {
           const cid = String(g * 100 + c);
-          map[cid] = "1" + cid; // 1101 ~ 1316
+          map[cid] = "1" + cid;
         }
       });
       return map;
     }
 
-    const STORAGE_KEY = "CYGSH_BIG_CLEAN_V2";
-
-    function getDefaultState() {
-      return {
+    function createSeededDemoState() {
+      const base = {
         settings: {
           academicYear: "115",
           semester: "1",
@@ -997,13 +794,95 @@
           ]
         },
         classPasswords: buildInitialClassPasswords(),
-        areaMap: buildInitialAreaMap(),
+        areaMap: JSON.parse(JSON.stringify(SECRET_BOOK_AREA_MAP)),
         rounds: {
           1: { cadre: [], teacher: [], flowerbed: [], coop: [] },
           2: { cadre: [], teacher: [], flowerbed: [], coop: [] },
           3: { cadre: [], teacher: [], flowerbed: [], coop: [] }
         }
       };
+
+      // 自動產生第一次大掃除示範成績，讓體驗者點開查詢或報表立即看到數據
+      const rData = base.rounds[1];
+      [1, 2, 3].forEach(g => {
+        const targetG = g === 1 ? 3 : (g === 2 ? 1 : 2);
+        for (let c = 1; c <= 16; c++) {
+          const scorerCid = String(g * 100 + c);
+          const area = c <= 5 ? "公共區" : (c <= 10 ? "責任區" : "班廁");
+          for (let tc = 1; tc <= 16; tc++) {
+            const targetCid = String(targetG * 100 + tc);
+            const score = 78 + ((c * 3 + tc * 2) % 8); // 78~85 穩定分布
+            rData.cadre.push({
+              id: `DEMO_C_${scorerCid}_${targetCid}`,
+              scorerClassId: scorerCid,
+              scorerClassNum: c,
+              scorerName: `股長${scorerCid}`,
+              targetClassId: targetCid,
+              area,
+              score,
+              remark: score <= 78 ? "窗台與角落仍有少許落葉紙屑" : (score === 85 ? "環境整潔表現優異" : ""),
+              time: "10:05:00"
+            });
+          }
+        }
+      });
+
+      const teaSteps = [-1.0, -0.5, 0, 0, 0.5, 1.0, 1.5, 2.0, 0.5, 0, -0.5, 1.0, 1.5, 0, 0.5, 2.5];
+      [1, 2, 3].forEach(g => {
+        const t = base.staff.teachers[g - 1];
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          const sc = teaSteps[c - 1];
+          rData.teacher.push({
+            id: `DEMO_T_${t.id}_${cid}`,
+            teacherId: t.id,
+            teacherName: t.name,
+            targetClassId: cid,
+            score: sc,
+            remark: sc < 0 ? "洗手台濾網與走廊轉角需再加強" : (sc >= 1.5 ? "掃具擺放整齊、地面光亮" : ""),
+            time: "10:08:00"
+          });
+        }
+      });
+
+      base.staff.flowerbeds.forEach((fb, fIdx) => {
+        const zone = fIdx === 0 ? "後走廊" : "前走廊";
+        [1, 2].forEach(g => {
+          for (let c = 1; c <= 16; c++) {
+            const cid = String(g * 100 + c);
+            const isNone = (c === 4 && fIdx > 0);
+            const sc = isNone ? "無" : (5 + ((c + fIdx) % 5));
+            rData.flowerbed.push({
+              id: `DEMO_FB_${fb.id}_${zone}_${cid}`,
+              fbId: fb.id,
+              fbName: fb.name,
+              zone,
+              targetClassId: cid,
+              score: sc,
+              remark: sc >= 8 ? "花圃枯葉清除徹底" : "",
+              time: "10:09:00"
+            });
+          }
+        });
+      });
+
+      [1, 2, 3].forEach(g => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          const sc = (c === 7 && g === 1) ? -1 : 0;
+          rData.coop.push({
+            id: `DEMO_CP_${cid}`,
+            coopId: "COOP_SINGLE",
+            coopName: "合作社代表",
+            targetClassId: cid,
+            score: sc,
+            remark: sc === -1 ? "餐車未推回刷洗放整齊" : "",
+            time: "10:10:00"
+          });
+        }
+      });
+
+      return base;
     }
 
     let DB = loadDB();
@@ -1013,16 +892,24 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          const merged = Object.assign(getDefaultState(), parsed);
-          if (!merged.areaMap) merged.areaMap = buildInitialAreaMap();
-          return merged;
+          if (parsed && parsed.settings && parsed.areaMap) return parsed;
         }
       } catch (e) {}
-      return getDefaultState();
+      const initial = createSeededDemoState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
     }
 
     function saveDB() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+    }
+
+    function resetEntireDemoData() {
+      if (!confirm("確定要將體驗測試版重設為初始示範資料嗎？")) return;
+      DB = createSeededDemoState();
+      saveDB();
+      goHomePage();
+      showToast("🔄 已恢復初始示範資料！", "success");
     }
 
     const SESSION = {
@@ -1090,9 +977,6 @@
     // 3. 初始化與首頁導覽
     // =========================================================================
     window.addEventListener("DOMContentLoaded", () => {
-      if (!API_URL) {
-        document.getElementById("preview-mode-badge").classList.remove("hidden");
-      }
       refreshHeaderAndHome();
       updateCadreClassOptions();
       updateInquiryClassOptions();
@@ -1109,20 +993,21 @@
       document.getElementById("home-broadcast-text").textContent = s.broadcast;
 
       const teaSel = document.getElementById("tea-select");
-      teaSel.innerHTML = DB.staff.teachers.map(t =>
-        `<option value="${t.id}">${t.name}</option>`
-      ).join("");
+      if (teaSel) {
+        teaSel.innerHTML = DB.staff.teachers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
+      }
 
       const fbSel = document.getElementById("fb-select");
-      fbSel.innerHTML = DB.staff.flowerbeds.map(f =>
-        `<option value="${f.id}">${f.name}</option>`
-      ).join("");
+      if (fbSel) {
+        fbSel.innerHTML = DB.staff.flowerbeds.map(f => `<option value="${f.id}">${escapeHtml(f.name)}</option>`).join("");
+      }
     }
 
     function goHomePage() {
       SESSION.role = null;
       SESSION.user = null;
       SESSION.isAdminProxy = false;
+      SESSION.scoringDrafts = {};
 
       ["view-scoring", "view-inquiry", "view-admin"].forEach(id => {
         document.getElementById(id).classList.add("hidden");
@@ -1200,7 +1085,7 @@
     }
 
     // =========================================================================
-    // 4. 登入驗證與分流（嚴格遵守密碼提示隱藏規則）
+    // 4. 登入驗證與分流
     // =========================================================================
     function submitLoginCadre(e) {
       e.preventDefault();
@@ -1213,6 +1098,8 @@
       const classNum = Number(document.getElementById("cadre-class").value);
       const classId = String(grade * 100 + classNum);
       const name = document.getElementById("cadre-name").value.trim();
+      if (!name) return showToast("請輸入幹部姓名", "warning");
+
       const targetGrade = getCadreTargetGrade(grade);
       const area = getCadreAssignedArea(DB.settings.activeRound, classNum);
 
@@ -1220,6 +1107,7 @@
       SESSION.isAdminProxy = false;
       SESSION.user = { grade, classNum, classId, name, targetGrade, area };
       SESSION.scoringGradeTab = targetGrade;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -1239,6 +1127,7 @@
       SESSION.isAdminProxy = false;
       SESSION.user = { id: teacher.id, name: teacher.name, targetGrade };
       SESSION.scoringGradeTab = targetGrade;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -1258,6 +1147,7 @@
       SESSION.isAdminProxy = false;
       SESSION.user = { id: fb.id, name: fb.name, zone };
       SESSION.scoringGradeTab = 1;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -1269,15 +1159,13 @@
         return;
       }
       const name = document.getElementById("coop-name").value.trim();
-      if (!name) {
-        showToast("請輸入評分人員姓名", "warning");
-        return;
-      }
+      if (!name) return showToast("請輸入評分人員姓名", "warning");
 
       SESSION.role = "coop";
       SESSION.isAdminProxy = false;
       SESSION.user = { id: "COOP_SINGLE", name };
       SESSION.scoringGradeTab = 1;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -1323,6 +1211,37 @@
     // =========================================================================
     // 5. 四大評分工作區（手機直式卡片 ＋ 電腦橫式寬版表格）
     // =========================================================================
+    function initScoringDrafts() {
+      const roundNum = Number(DB.settings.activeRound);
+      const rData = DB.rounds[roundNum];
+      SESSION.scoringDrafts = {};
+
+      let targetGrades = [];
+      if (SESSION.role === "cadre") targetGrades = [SESSION.user.targetGrade];
+      else if (SESSION.role === "teacher") targetGrades = [SESSION.user.targetGrade];
+      else if (SESSION.role === "flowerbed") targetGrades = [1, 2];
+      else if (SESSION.role === "coop") targetGrades = [1, 2, 3];
+
+      targetGrades.forEach(g => {
+        for (let c = 1; c <= 16; c++) {
+          const cid = String(g * 100 + c);
+          if (SESSION.role === "cadre") {
+            const rec = rData.cadre.find(x => x.scorerClassId === SESSION.user.classId && x.targetClassId === cid);
+            SESSION.scoringDrafts[cid] = rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "80", remark: "" };
+          } else if (SESSION.role === "teacher") {
+            const rec = rData.teacher.find(x => x.teacherId === SESSION.user.id && x.targetClassId === cid);
+            SESSION.scoringDrafts[cid] = rec ? { score: Number(rec.score).toFixed(1), remark: rec.remark || "" } : { score: "0.0", remark: "" };
+          } else if (SESSION.role === "flowerbed") {
+            const rec = rData.flowerbed.find(x => x.fbId === SESSION.user.id && x.zone === SESSION.user.zone && x.targetClassId === cid);
+            SESSION.scoringDrafts[cid] = rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "5", remark: "" };
+          } else if (SESSION.role === "coop") {
+            const rec = rData.coop.find(x => x.targetClassId === cid);
+            SESSION.scoringDrafts[cid] = rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "0", remark: "" };
+          }
+        }
+      });
+    }
+
     function enterScoringWorkspace() {
       document.getElementById("view-login").classList.add("hidden");
       document.getElementById("view-admin").classList.add("hidden");
@@ -1388,24 +1307,6 @@
       renderScoringRows();
     }
 
-    function getExistingScoreForRow(roundNum, classId) {
-      const rData = DB.rounds[roundNum];
-      if (SESSION.role === "cadre") {
-        const rec = rData.cadre.find(x => x.scorerClassId === SESSION.user.classId && x.targetClassId === classId);
-        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "80", remark: "" };
-      } else if (SESSION.role === "teacher") {
-        const rec = rData.teacher.find(x => x.teacherId === SESSION.user.id && x.targetClassId === classId);
-        return rec ? { score: Number(rec.score).toFixed(1), remark: rec.remark || "" } : { score: "0.0", remark: "" };
-      } else if (SESSION.role === "flowerbed") {
-        const rec = rData.flowerbed.find(x => x.fbId === SESSION.user.id && x.zone === SESSION.user.zone && x.targetClassId === classId);
-        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "5", remark: "" };
-      } else if (SESSION.role === "coop") {
-        const rec = rData.coop.find(x => x.targetClassId === classId);
-        return rec ? { score: String(rec.score), remark: rec.remark || "" } : { score: "0", remark: "" };
-      }
-      return { score: "0", remark: "" };
-    }
-
     function buildScoreSelectOptionsHtml(selectedVal) {
       if (SESSION.role === "cadre") {
         let html = "";
@@ -1440,65 +1341,37 @@
 
     function renderScoringRows() {
       const g = SESSION.scoringGradeTab;
-      const roundNum = Number(DB.settings.activeRound);
       const desktopHead = document.getElementById("scoring-desktop-header");
       const container = document.getElementById("scoring-rows-container");
       container.innerHTML = "";
-      SESSION.scoringDrafts = {};
 
       if (SESSION.role === "cadre") {
         desktopHead.style.gridTemplateColumns = "100px 115px 1fr 190px 240px";
-        desktopHead.innerHTML = `
-          <div>受評班級</div>
-          <div>評分區域</div>
-          <div>該班負責掃區位置</div>
-          <div>評分成績</div>
-          <div>備註欄</div>
-        `;
+        desktopHead.innerHTML = `<div>受評班級</div><div>評分區域</div><div>該班負責掃區位置</div><div>評分成績</div><div>備註欄</div>`;
       } else if (SESSION.role === "teacher") {
         desktopHead.style.gridTemplateColumns = "90px 1.3fr 1fr 1fr 165px 200px";
-        desktopHead.innerHTML = `
-          <div>班級</div>
-          <div>公共區</div>
-          <div>責任區</div>
-          <div>班廁</div>
-          <div>整潔成績</div>
-          <div>備註欄</div>
-        `;
+        desktopHead.innerHTML = `<div>班級</div><div>公共區</div><div>責任區</div><div>班廁</div><div>整潔成績</div><div>備註欄</div>`;
       } else if (SESSION.role === "flowerbed") {
         desktopHead.style.gridTemplateColumns = "110px 180px 210px 1fr";
-        desktopHead.innerHTML = `
-          <div>班級</div>
-          <div>負責花圃區塊</div>
-          <div>評分成績</div>
-          <div>備註欄</div>
-        `;
+        desktopHead.innerHTML = `<div>班級</div><div>負責花圃區塊</div><div>評分成績</div><div>備註欄</div>`;
       } else if (SESSION.role === "coop") {
         desktopHead.style.gridTemplateColumns = "110px 250px 240px 1fr";
-        desktopHead.innerHTML = `
-          <div>班級</div>
-          <div>檢查項目</div>
-          <div>餐車成績</div>
-          <div>備註欄</div>
-        `;
+        desktopHead.innerHTML = `<div>班級</div><div>檢查項目</div><div>餐車成績</div><div>備註欄</div>`;
       }
 
       for (let c = 1; c <= 16; c++) {
         const clsId = String(g * 100 + c);
-        const existing = getExistingScoreForRow(roundNum, clsId);
-        SESSION.scoringDrafts[clsId] = { score: existing.score, remark: existing.remark };
-
+        const draft = SESSION.scoringDrafts[clsId] || { score: "80", remark: "" };
         const areaObj = DB.areaMap[clsId] || {};
         const rowDiv = document.createElement("div");
         rowDiv.id = `srow-${clsId}`;
-        const highlightClass = getRowHighlightClass(existing.score);
+        const highlightClass = getRowHighlightClass(draft.score);
 
         if (SESSION.role === "cadre") {
           const areaType = SESSION.user.area;
           const locText = areaType === "公共區" ? areaObj.publicArea : (areaType === "責任區" ? areaObj.respArea : areaObj.toiletArea);
           rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
           rowDiv.dataset.cols = "100px 115px 1fr 190px 240px";
-
           rowDiv.innerHTML = `
             <div class="flex items-center justify-between md:block">
               <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
@@ -1508,54 +1381,52 @@
               <span class="px-2.5 py-1 rounded-lg bg-teal-600 text-white text-xs-force font-extrabold">${areaType}</span>
             </div>
             <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg border md:border-0 border-slate-200/80">
-              <span class="md:hidden font-bold text-slate-800">掃區位置：</span>${locText}
+              <span class="md:hidden font-bold text-slate-800">掃區位置：</span>${escapeHtml(locText)}
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">評分成績</label>
               <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
-                ${buildScoreSelectOptionsHtml(existing.score)}
+                ${buildScoreSelectOptionsHtml(draft.score)}
               </select>
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
-              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+              <input type="text" value="${escapeAttr(draft.remark)}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
                 placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
             </div>
           `;
         } else if (SESSION.role === "teacher") {
           rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
           rowDiv.dataset.cols = "90px 1.3fr 1fr 1fr 165px 200px";
-
           rowDiv.innerHTML = `
             <div class="flex items-center justify-between md:block">
               <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
               <span class="md:hidden text-xs-force font-bold text-indigo-700">師長巡檢</span>
             </div>
             <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
-              <span class="md:hidden font-extrabold text-slate-900">【公共區】</span>${areaObj.publicArea}
+              <span class="md:hidden font-extrabold text-slate-900">【公共區】</span>${escapeHtml(areaObj.publicArea)}
             </div>
             <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
-              <span class="md:hidden font-extrabold text-slate-900">【責任區】</span>${areaObj.respArea}
+              <span class="md:hidden font-extrabold text-slate-900">【責任區】</span>${escapeHtml(areaObj.respArea)}
             </div>
             <div class="text-xs-force text-slate-700 leading-relaxed bg-slate-50 md:bg-transparent p-2.5 md:p-0 rounded-lg">
-              <span class="md:hidden font-extrabold text-slate-900">【班廁】</span>${areaObj.toiletArea}
+              <span class="md:hidden font-extrabold text-slate-900">【班廁】</span>${escapeHtml(areaObj.toiletArea)}
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">整潔成績</label>
               <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
-                ${buildScoreSelectOptionsHtml(existing.score)}
+                ${buildScoreSelectOptionsHtml(draft.score)}
               </select>
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
-              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+              <input type="text" value="${escapeAttr(draft.remark)}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
                 placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
             </div>
           `;
         } else if (SESSION.role === "flowerbed") {
           rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
           rowDiv.dataset.cols = "110px 180px 210px 1fr";
-
           rowDiv.innerHTML = `
             <div class="flex items-center justify-between md:block">
               <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
@@ -1565,19 +1436,18 @@
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">評分成績</label>
               <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
-                ${buildScoreSelectOptionsHtml(existing.score)}
+                ${buildScoreSelectOptionsHtml(draft.score)}
               </select>
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
-              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+              <input type="text" value="${escapeAttr(draft.remark)}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
                 placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
             </div>
           `;
         } else if (SESSION.role === "coop") {
           rowDiv.className = `rounded-2xl md:rounded-none p-4 md:px-5 md:py-3.5 border md:border-0 shadow-xs md:shadow-none grid grid-cols-1 md:items-center gap-2.5 md:gap-4 transition ${highlightClass}`;
           rowDiv.dataset.cols = "110px 250px 240px 1fr";
-
           rowDiv.innerHTML = `
             <div class="flex items-center justify-between md:block">
               <span class="text-lg md:text-base font-extrabold text-slate-900">${clsId} 班</span>
@@ -1587,12 +1457,12 @@
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">餐車成績</label>
               <select onchange="onScoringInput('${clsId}', 'score', this.value)" class="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-extrabold bg-white text-slate-900">
-                ${buildScoreSelectOptionsHtml(existing.score)}
+                ${buildScoreSelectOptionsHtml(draft.score)}
               </select>
             </div>
             <div>
               <label class="md:hidden block text-xs-force font-bold text-slate-600 mb-1">備註欄</label>
-              <input type="text" value="${existing.remark.replace(/"/g, '&quot;')}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
+              <input type="text" value="${escapeAttr(draft.remark)}" oninput="onScoringInput('${clsId}', 'remark', this.value)"
                 placeholder="可輸入文字說明（選填）" class="w-full rounded-xl border border-slate-300 px-3 py-2 bg-white text-sm-force" />
             </div>
           `;
@@ -1602,8 +1472,9 @@
       }
 
       applyResponsiveGridColumns();
+      const totalDraftCount = Object.keys(SESSION.scoringDrafts).length;
       document.getElementById("scoring-footer-status").textContent =
-        `目前顯示：${{1:"高一",2:"高二",3:"高三"}[g]}（共 16 班）`;
+        `目前顯示：${{1:"高一",2:"高二",3:"高三"}[g]}（本次共需送出 ${totalDraftCount} 班）`;
     }
 
     function applyResponsiveGridColumns() {
@@ -1655,6 +1526,7 @@
       const roundNum = Number(DB.settings.activeRound);
       const rData = DB.rounds[roundNum];
       const nowStr = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+      const count = Object.keys(SESSION.scoringDrafts).length;
 
       Object.entries(SESSION.scoringDrafts).forEach(([targetClassId, draft]) => {
         if (SESSION.role === "cadre") {
@@ -1712,7 +1584,7 @@
       });
 
       saveDB();
-      showToast("🎉 已成功送出 16 個班級的評分紀錄！", "success");
+      showToast(`🎉 已成功送出 ${count} 個班級的評分紀錄！`, "success");
 
       if (SESSION.isAdminProxy) {
         SESSION.role = "admin";
@@ -1730,7 +1602,6 @@
     // 6. 核心計分引擎（100% 依大掃除辦法權重比例計算）
     // =========================================================================
     function getFlowerbedColumnsMeta(rData) {
-      // 依花圃評分師長名單順序，整合實際送出的「師長 + 區域(前走廊/後走廊)」欄位
       const cols = [];
       const seen = new Set();
       DB.staff.flowerbeds.forEach(fb => {
@@ -1777,7 +1648,6 @@
       for (let c = 1; c <= 16; c++) {
         const clsId = String(g * 100 + c);
 
-        // 公共區
         const pubScores = pubScorerClasses.map(scid => {
           const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "公共區");
           return rec ? Number(rec.score) : null;
@@ -1787,7 +1657,6 @@
         const pubWeight = isSenior3 ? 0.30 : 0.25;
         const pubWeighted = pubRawAvg * pubWeight;
 
-        // 責任區
         const respScores = respScorerClasses.map(scid => {
           const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "責任區");
           return rec ? Number(rec.score) : null;
@@ -1797,7 +1666,6 @@
         const respWeight = isSenior3 ? 0.30 : 0.25;
         const respWeighted = respRawAvg * respWeight;
 
-        // 班廁
         const toiletScores = toiletScorerClasses.map(scid => {
           const rec = rData.cadre.find(x => x.scorerClassId === scid && x.targetClassId === clsId && x.area === "班廁");
           return rec ? Number(rec.score) : null;
@@ -1807,7 +1675,6 @@
         const toiletWeight = 0.40;
         const toiletWeighted = toiletRawAvg * toiletWeight;
 
-        // 花圃（高一、高二有，高三無；選「無」自動排除分母）
         let fbScores = [];
         let fbAvg = 0;
         if (!isSenior3) {
@@ -1822,11 +1689,9 @@
           fbAvg = validFb.length > 0 ? validFb.reduce((a, b) => a + b, 0) / validFb.length : 5;
         }
 
-        // 合作社餐車
         const coopRec = rData.coop.find(x => x.targetClassId === clsId);
         const cartScore = coopRec ? Number(coopRec.score) : 0;
 
-        // 師長評分
         const teaRecs = rData.teacher.filter(x => x.targetClassId === clsId);
         const teacherScore = teaRecs.reduce((sum, r) => sum + Number(r.score), 0);
 
@@ -1911,7 +1776,7 @@
           <div class="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200">
             <p class="text-xs-force font-bold text-emerald-800">前後花圃（佔 10%）</p>
             <p class="text-xl font-extrabold text-emerald-900 mt-1">${me.fbAvg.toFixed(2)} <span class="text-xs-force font-normal text-emerald-700">分</span></p>
-            <p class="text-[11px] text-emerald-700 mt-0.5 truncate">${fbDetail}</p>
+            <p class="text-[11px] text-emerald-700 mt-0.5 truncate">${escapeHtml(fbDetail)}</p>
           </div>
         `;
       }
@@ -1952,10 +1817,10 @@
         remBox.innerHTML = remarks.map(rm => `
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-2 text-xs-force">
             <div>
-              <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-bold mr-1.5">${rm.tag}</span>
-              <span class="text-slate-800 font-medium">${rm.text}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-bold mr-1.5">${escapeHtml(rm.tag)}</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(rm.text)}</span>
             </div>
-            <span class="font-extrabold text-slate-700 shrink-0">${rm.score}</span>
+            <span class="font-extrabold text-slate-700 shrink-0">${escapeHtml(rm.score)}</span>
           </div>
         `).join("");
       }
@@ -1995,6 +1860,8 @@
       refreshHeaderAndHome();
       document.getElementById("rep-round-select").value = String(newRound);
       document.getElementById("prog-round-select").value = String(newRound);
+      renderAdminSummaryReport();
+      renderAdminProgressPane();
       showToast(`✅ 已切換並同步全校為【${getRoundLabel(newRound)}】！`, "success");
     }
 
@@ -2017,7 +1884,6 @@
       else if (tab === "settings") renderAdminSettingsPane();
     }
 
-    // 8.1 總成績報表
     function switchReportGrade(g) {
       SESSION.adminReportGrade = Number(g);
       [1, 2, 3].forEach(idx => {
@@ -2045,7 +1911,7 @@
 
       const fbHeaders = isSenior3
         ? ""
-        : fbColsMeta.map(col => `<th class="py-2.5 px-2 whitespace-nowrap bg-emerald-900">${col.fbName}${col.zone ? `<br><span class="font-normal text-[11px]">(${col.zone})</span>` : ""}</th>`).join("") +
+        : fbColsMeta.map(col => `<th class="py-2.5 px-2 whitespace-nowrap bg-emerald-900">${escapeHtml(col.fbName)}${col.zone ? `<br><span class="font-normal text-[11px]">(${escapeHtml(col.zone)})</span>` : ""}</th>`).join("") +
           `<th class="py-2.5 px-2 whitespace-nowrap bg-emerald-800">花圃平均<br>(10%)</th>`;
 
       thead.innerHTML = `
@@ -2155,7 +2021,7 @@
               r.teacherScore,
               { f: `H${excelRow}+O${excelRow}+V${excelRow}+W${excelRow}+X${excelRow}` },
               { f: `RANK(Y${excelRow},$Y$3:$Y$18)` },
-              r.rank <= 6 ? "🏆 前六名（獎狀鼓勵）" : ""
+              { f: `IF(Z${excelRow}<=6,"🏆 前六名（獎狀鼓勵）","")` }
             );
           } else {
             const fbStartCol = 22;
@@ -2169,6 +2035,7 @@
             const cartLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 1);
             const teaLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 2);
             const totalLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 3);
+            const rankLetter = XLSX.utils.encode_col(fbStartCol + fbColsMeta.length + 4);
 
             rowVals.push(
               { f: `IFERROR(AVERAGE(${fbStartLetter}${excelRow}:${fbEndLetter}${excelRow}), 5)` },
@@ -2176,7 +2043,7 @@
               r.teacherScore,
               { f: `H${excelRow}+O${excelRow}+V${excelRow}+${fbAvgLetter}${excelRow}+${cartLetter}${excelRow}+${teaLetter}${excelRow}` },
               { f: `RANK(${totalLetter}${excelRow},$${totalLetter}$3:$${totalLetter}$18)` },
-              r.rank <= 6 ? "🏆 前六名（獎狀鼓勵）" : ""
+              { f: `IF(${rankLetter}${excelRow}<=6,"🏆 前六名（獎狀鼓勵）","")` }
             );
           }
           aoa.push(rowVals);
@@ -2186,12 +2053,11 @@
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
       });
 
-      const fileName = `${DB.settings.academicYear}學年度第${DB.settings.semester}學期_${roundTitle}_統計總表.xlsx`;
+      const fileName = `${DB.settings.academicYear}學年度第${DB.settings.semester}學期_${roundTitle}_統計總表(體驗版).xlsx`;
       XLSX.writeFile(wb, fileName);
       showToast(`📥 已成功匯出「${fileName}」！`, "success");
     }
 
-    // 8.2 送出進度與衛生組整班代填
     function renderAdminProgressPane() {
       const roundNum = Number(document.getElementById("prog-round-select").value);
       const rData = DB.rounds[roundNum];
@@ -2202,7 +2068,7 @@
         return `
           <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-xs-force">
             <div>
-              <span class="font-extrabold text-slate-900">${t.name}</span>
+              <span class="font-extrabold text-slate-900">${escapeHtml(t.name)}</span>
               <span class="text-slate-500 ml-1">（已登錄 ${cnt} 班）</span>
             </div>
             <div class="flex items-center gap-1">
@@ -2220,7 +2086,7 @@
         return `
           <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-xs-force">
             <div>
-              <span class="font-extrabold text-slate-900">${fb.name}</span>
+              <span class="font-extrabold text-slate-900">${escapeHtml(fb.name)}</span>
               <span class="text-slate-500 ml-1">（前${cntFront}/32・後${cntBack}/32）</span>
             </div>
             <div class="flex items-center gap-1">
@@ -2232,14 +2098,14 @@
       }).join("");
 
       const coopDone = rData.coop.length;
-      const coopName = rData.coop[0] ? rData.coop[0].coopName : "合作社人員";
+      const coopName = rData.coop[0] ? rData.coop[0].coopName : "合作社代表";
       const coopHtml = `
         <div class="flex items-center justify-between py-2 text-xs-force">
           <div>
             <span class="font-extrabold text-slate-900">全校團膳餐車</span>
             <span class="text-slate-500 ml-1">（已登錄 ${coopDone}/48 班）</span>
           </div>
-          <button type="button" onclick="startAdminProxyCoop('${coopName.replace(/'/g, "")}', ${roundNum})" class="px-2.5 py-1 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold">✍️ 代填/修改</button>
+          <button type="button" onclick="startAdminProxyCoop('${escapeAttr(coopName)}', ${roundNum})" class="px-2.5 py-1 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-900 font-bold">✍️ 代填/修改</button>
         </div>
       `;
 
@@ -2275,7 +2141,7 @@
                 <span class="font-extrabold text-slate-900">${cid}</span>
                 <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">${area}</span>
                 ${isDone
-                  ? `<span class="text-emerald-700 font-bold">✅ 已送出 (${scorerName})</span>`
+                  ? `<span class="text-emerald-700 font-bold">✅ 已送出 (${escapeHtml(scorerName)})</span>`
                   : `<span class="text-rose-600 font-bold">⏳ 未送出</span>`}
               </div>
               <button type="button" onclick="startAdminProxyCadre(${g}, ${c}, ${roundNum})" class="px-2.5 py-1 rounded-lg ${isDone ? "bg-slate-100 text-slate-700" : "bg-teal-600 text-white"} font-bold">
@@ -2304,6 +2170,7 @@
       SESSION.isAdminProxy = true;
       SESSION.user = { grade, classNum, classId, name: "服務股長", targetGrade, area };
       SESSION.scoringGradeTab = targetGrade;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -2316,6 +2183,7 @@
       SESSION.isAdminProxy = true;
       SESSION.user = { id: t.id, name: t.name, targetGrade: Number(targetGrade) };
       SESSION.scoringGradeTab = Number(targetGrade);
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -2328,6 +2196,7 @@
       SESSION.isAdminProxy = true;
       SESSION.user = { id: fb.id, name: fb.name, zone };
       SESSION.scoringGradeTab = 1;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
@@ -2336,12 +2205,12 @@
       saveDB();
       SESSION.role = "coop";
       SESSION.isAdminProxy = true;
-      SESSION.user = { id: "COOP_SINGLE", name: name || "合作社人員" };
+      SESSION.user = { id: "COOP_SINGLE", name: name || "合作社代表" };
       SESSION.scoringGradeTab = 1;
+      initScoringDrafts();
       enterScoringWorkspace();
     }
 
-    // 8.3 單筆補填與明細修改
     function onBackfillTypeChange() {
       const type = document.getElementById("bf-type").value;
       const srcSel = document.getElementById("bf-source");
@@ -2361,7 +2230,7 @@
         }
       } else if (type === "teacher") {
         DB.staff.teachers.forEach(t => {
-          srcSel.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+          srcSel.innerHTML += `<option value="${t.id}">${escapeHtml(t.name)}</option>`;
         });
         for (let t = 30; t >= -30; t -= 5) {
           const v = (t / 10).toFixed(1);
@@ -2369,8 +2238,8 @@
         }
       } else if (type === "flowerbed") {
         DB.staff.flowerbeds.forEach(fb => {
-          srcSel.innerHTML += `<option value="${fb.id}|前走廊">${fb.name}（前走廊）</option>`;
-          srcSel.innerHTML += `<option value="${fb.id}|後走廊">${fb.name}（後走廊）</option>`;
+          srcSel.innerHTML += `<option value="${fb.id}|前走廊">${escapeHtml(fb.name)}（前走廊）</option>`;
+          srcSel.innerHTML += `<option value="${fb.id}|後走廊">${escapeHtml(fb.name)}（後走廊）</option>`;
         });
         scoreSel.innerHTML += `<option value="無">無（未分配花圃）</option>`;
         for (let s = 10; s >= 0; s--) {
@@ -2502,10 +2371,10 @@
         <tr class="hover:bg-slate-50">
           <td class="py-2 px-3 font-bold">${u.typeLabel}</td>
           <td class="py-2 px-3 font-extrabold text-slate-900">${u.targetClassId}</td>
-          <td class="py-2 px-3">${u.itemLabel}</td>
-          <td class="py-2 px-3 text-slate-600">${u.sourceLabel}</td>
+          <td class="py-2 px-3">${escapeHtml(u.itemLabel)}</td>
+          <td class="py-2 px-3 text-slate-600">${escapeHtml(u.sourceLabel)}</td>
           <td class="py-2 px-3 font-extrabold text-teal-700">${u.scoreDisplay}</td>
-          <td class="py-2 px-3 text-slate-600">${u.remark || "-"}</td>
+          <td class="py-2 px-3 text-slate-600">${escapeHtml(u.remark || "-")}</td>
           <td class="py-2 px-3 text-right">
             <button type="button" onclick="deleteSingleRecord(${roundNum}, '${u.type}', '${u.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold">刪除</button>
           </td>
@@ -2521,7 +2390,6 @@
       showToast("已刪除該筆紀錄。", "info");
     }
 
-    // 8.4 名單排序、密碼與掃區設定
     function renderAdminSettingsPane() {
       const s = DB.settings;
       document.getElementById("set-year").value = s.academicYear;
@@ -2557,7 +2425,6 @@
     }
 
     function renderStaffLists() {
-      // 1. Teachers
       document.getElementById("list-teachers").innerHTML = DB.staff.teachers.map((t, idx) => `
         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs-force">
           <div class="flex items-center gap-2">
@@ -2565,13 +2432,12 @@
               <button type="button" onclick="moveStaffItem('teachers', ${idx}, -1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === 0 ? "disabled" : ""}>▲</button>
               <button type="button" onclick="moveStaffItem('teachers', ${idx}, 1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === DB.staff.teachers.length - 1 ? "disabled" : ""}>▼</button>
             </div>
-            <span class="font-extrabold text-slate-900">${idx + 1}. ${t.name}</span>
+            <span class="font-extrabold text-slate-900">${idx + 1}. ${escapeHtml(t.name)}</span>
           </div>
           <button type="button" onclick="deleteStaffItem('teachers', ${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-bold">刪除</button>
         </div>
       `).join("");
 
-      // 2. Flowerbeds
       document.getElementById("list-flowerbeds").innerHTML = DB.staff.flowerbeds.map((fb, idx) => `
         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs-force">
           <div class="flex items-center gap-2">
@@ -2579,7 +2445,7 @@
               <button type="button" onclick="moveStaffItem('flowerbeds', ${idx}, -1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === 0 ? "disabled" : ""}>▲</button>
               <button type="button" onclick="moveStaffItem('flowerbeds', ${idx}, 1)" class="px-1.5 bg-white border border-slate-300 rounded font-bold disabled:opacity-30" ${idx === DB.staff.flowerbeds.length - 1 ? "disabled" : ""}>▼</button>
             </div>
-            <span class="font-extrabold text-slate-900">${idx + 1}. ${fb.name}</span>
+            <span class="font-extrabold text-slate-900">${idx + 1}. ${escapeHtml(fb.name)}</span>
           </div>
           <button type="button" onclick="deleteStaffItem('flowerbeds', ${idx})" class="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-bold">刪除</button>
         </div>
@@ -2619,15 +2485,12 @@
       if (DB.staff[key].length <= 1) {
         return showToast("至少需保留一位評分人員。", "warning");
       }
-      if (!confirm("確定要刪除此位人員嗎？")) return;
       DB.staff[key].splice(idx, 1);
       saveDB();
       refreshHeaderAndHome();
       renderStaffLists();
-      showToast("已刪除名單項目。", "info");
     }
 
-    // 48 班查詢密碼表
     function switchPwTableGrade(g) {
       SESSION.adminPwGrade = Number(g);
       [1, 2, 3].forEach(idx => {
@@ -2649,7 +2512,7 @@
         html += `
           <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-1.5">
             <span class="font-extrabold text-slate-800 text-xs-force">${cid}</span>
-            <input type="text" inputmode="numeric" value="${pw}"
+            <input type="text" inputmode="numeric" value="${escapeAttr(pw)}"
               onchange="DB.classPasswords['${cid}'] = this.value.trim(); saveDB(); showToast('已更新 ${cid} 班查詢密碼','success')"
               class="w-20 text-center rounded-lg border border-slate-300 px-1.5 py-1 font-mono font-bold text-slate-900 bg-white text-sm-force" />
           </div>
@@ -2666,7 +2529,6 @@
       showToast("✅ 已重設全校 48 班密碼為 1+班級！", "success");
     }
 
-    // 掃區分配表微調
     function switchAreaMapGrade(g) {
       SESSION.adminAreaMapGrade = Number(g);
       [1, 2, 3, 0].forEach(idx => {
@@ -2725,13 +2587,13 @@
             <tr class="hover:bg-slate-50 align-top">
               <td class="py-2.5 px-3 font-extrabold text-slate-900">${cid} 班</td>
               <td class="py-2 px-2">
-                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'publicArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.publicArea}</textarea>
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'publicArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${escapeHtml(obj.publicArea)}</textarea>
               </td>
               <td class="py-2 px-2">
-                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'respArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.respArea}</textarea>
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'respArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${escapeHtml(obj.respArea)}</textarea>
               </td>
               <td class="py-2 px-2">
-                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'toiletArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${obj.toiletArea}</textarea>
+                <textarea rows="3" onchange="updateClassAreaField('${cid}', 'toiletArea', this.value)" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs-force leading-relaxed">${escapeHtml(obj.toiletArea)}</textarea>
               </td>
             </tr>
           `;
@@ -2741,9 +2603,6 @@
       tbody.innerHTML = html || '<tr><td colspan="4" class="py-6 text-center text-slate-400">找不到符合關鍵字的班級或掃區。</td></tr>';
     }
 
-    // =========================================================================
-    // 9. 一鍵載入模擬測試成績 / 清空成績
-    // =========================================================================
     function loadDemoSampleData() {
       const roundNum = Number(document.getElementById("rep-round-select").value);
       const rData = { cadre: [], teacher: [], flowerbed: [], coop: [] };
@@ -2829,7 +2688,7 @@
       DB.rounds[roundNum] = rData;
       saveDB();
       renderAdminSummaryReport();
-      showToast(`🧪 已載入【${getRoundLabel(roundNum)}】全校模擬測試成績！`, "success");
+      showToast(`🧪 已重新產生【${getRoundLabel(roundNum)}】模擬測試成績！`, "success");
     }
 
     function clearAllRoundScores() {
@@ -2839,6 +2698,16 @@
       saveDB();
       renderAdminSummaryReport();
       showToast(`🗑️ 已清空【${getRoundLabel(roundNum)}】成績！`, "info");
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escapeAttr(str) {
+      if (str === null || str === undefined) return "";
+      return String(str).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
   </script>
 </body>
